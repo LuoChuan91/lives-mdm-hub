@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+dist/
+# full-size screenshots written by tests/e2e.py; the README uses docs/img/
+docs/screenshots/

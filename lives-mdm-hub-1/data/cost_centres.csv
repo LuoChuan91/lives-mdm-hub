@@ -1,0 +1,19 @@
+code,name,entity,country,owner,valid_from
+CC-SPD-SG-SALES,SPD Sales - Singapore,SPD,SG,Grace,2024-01-01
+CC-SPD-MY-SALES,SPD Sales - Malaysia,SPD,MY,Mei Ling,2023-01-01
+CC-SPD-ID-SALES,SPD Sales - Indonesia,SPD,ID,Grace,2023-01-01
+CC-SPD-TH-SALES,SPD Sales - Thailand,SPD,TH,Hafiz,2017-01-01
+CC-SPD-VN-SALES,SPD Sales - Vietnam,SPD,VN,Hafiz,2020-01-01
+CC-SPD-SG-MKT,SPD Marketing - Singapore,SPD,SG,Mei Ling,2016-01-01
+CC-QTS-SG-SALES,QTS Sales - Singapore,QTS,SG,Hafiz,2016-01-01
+CC-QTS-MY-SALES,QTS Sales - Malaysia,QTS,MY,Priya,2024-01-01
+CC-QTS-SG-WH,QTS Warehouse - Singapore,QTS,SG,Daniel,2016-01-01
+CC-QTS-MY-WH,QTS Warehouse - Malaysia,QTS,MY,Arjun,2024-01-01
+CC-QTG-SG-SVC,QTG Field service - Singapore,QTG,SG,Daniel,2022-01-01
+CC-QTG-MY-SVC,QTG Field service - Malaysia,QTG,MY,Daniel,2019-01-01
+CC-QTG-TH-SVC,QTG Field service - Thailand,QTG,TH,Arjun,2020-01-01
+CC-QTG-VN-SVC,QTG Field service - Vietnam,QTG,VN,Grace,2016-01-01
+CC-QTG-SG-SALES,QTG Sales - Singapore,QTG,SG,Wei Jie,2018-01-01
+CC-GRP-SG-FIN,GRP Group finance - Singapore,GRP,SG,Mei Ling,2022-01-01
+CC-GRP-SG-IT,GRP Group IT - Singapore,GRP,SG,Mei Ling,2023-01-01
+CC-GRP-SG-MDM,GRP Master data - Singapore,GRP,SG,Daniel,2016-01-01

@@ -1,0 +1,362 @@
+{
+  "note": "Ground truth for patterns planted in the synthetic data. Used by tests and to check the analysis finds them.",
+  "duplicate_customers": [
+    {
+      "original_id": "C-SG-0018",
+      "duplicate_id": "C-SG-0019",
+      "original_name": "National University Hospital",
+      "duplicate_name": "Natl Univ Hosp",
+      "products_booked_to_duplicate": "B",
+      "from_month": "always",
+      "wrong_country": null,
+      "story": "Cross-entity split: Lab supplies books all Product B orders to its own record"
+    },
+    {
+      "original_id": "C-MY-0007",
+      "duplicate_id": "C-MY-0026",
+      "original_name": "Klang Valley Specialist Hospital Sdn Bhd",
+      "duplicate_name": "KVSH - Klang Valley Specialist Hosp. Sdn Bhd",
+      "products_booked_to_duplicate": "C",
+      "from_month": "2026-07",
+      "wrong_country": null,
+      "story": "Created again in Jun 2026; Product C orders moved to it from Jul"
+    },
+    {
+      "original_id": "C-VN-0007",
+      "duplicate_id": "C-VN-0018",
+      "original_name": "Saigon Riverside Hospital JSC",
+      "duplicate_name": "Sai Gon Riverside International Hospital",
+      "products_booked_to_duplicate": "ABC",
+      "from_month": "2026-07",
+      "wrong_country": null,
+      "story": "Customer rebranded; sales requested a new account instead of updating the old one"
+    },
+    {
+      "original_id": "C-MY-0015",
+      "duplicate_id": "C-SG-0025",
+      "original_name": "Johor Specialist Hospital Sdn Bhd",
+      "duplicate_name": "Johor Specialist Hosp",
+      "products_booked_to_duplicate": "B",
+      "from_month": "always",
+      "wrong_country": "SG",
+      "story": "Created by a Singapore team with country = Singapore, so Malaysian volume shows up in Singapore"
+    },
+    {
+      "original_id": "C-ID-0002",
+      "duplicate_id": "C-ID-0016",
+      "original_name": "PT Rumah Sakit Surabaya Medika",
+      "duplicate_name": "RS Surabaya Medika",
+      "products_booked_to_duplicate": "C",
+      "from_month": "always",
+      "wrong_country": null,
+      "story": "Cross-entity split with a mistyped tax number"
+    },
+    {
+      "original_id": "C-TH-0014",
+      "duplicate_id": "C-TH-0021",
+      "original_name": "Bangkok Riverside Hospital Co., Ltd.",
+      "duplicate_name": "Bangkok Riverside Hosp",
+      "products_booked_to_duplicate": "ABC",
+      "from_month": "2026-08",
+      "wrong_country": null,
+      "story": "Purchasing office moved; a new account was opened at the new address"
+    },
+    {
+      "original_id": "C-MY-0017",
+      "duplicate_id": "C-MY-0019",
+      "original_name": "Penang Pathology Services Sdn Bhd",
+      "duplicate_name": "Penang Pathology Svcs",
+      "products_booked_to_duplicate": "A",
+      "from_month": "always",
+      "wrong_country": null,
+      "story": "Cross-entity split: diagnostics books Product A to its own record"
+    },
+    {
+      "original_id": "C-TH-0004",
+      "duplicate_id": "C-TH-0017",
+      "original_name": "Chiang Mai Clinical Laboratory Co., Ltd.",
+      "duplicate_name": "Chiangmai Clinical Lab",
+      "products_booked_to_duplicate": "B",
+      "from_month": "always",
+      "wrong_country": null,
+      "story": "Cross-entity split with a spelling variant"
+    },
+    {
+      "original_id": "C-VN-0005",
+      "duplicate_id": "C-VN-0016",
+      "original_name": "Hanoi Central Laboratory",
+      "duplicate_name": "Ha Noi Central Lab JSC",
+      "products_booked_to_duplicate": "B",
+      "from_month": "2026-03",
+      "wrong_country": null,
+      "story": "Created again in Feb 2026; Product B orders moved to it from Mar"
+    },
+    {
+      "original_id": "C-SG-0004",
+      "duplicate_id": "C-SG-0022",
+      "original_name": "Lion City Diagnostics Pte Ltd",
+      "duplicate_name": "Lion City Diagnostic Laboratory",
+      "products_booked_to_duplicate": "C",
+      "from_month": "always",
+      "wrong_country": null,
+      "story": "Cross-entity split with a mistyped registration number"
+    }
+  ],
+  "near_miss_pairs_not_duplicates": [
+    [
+      "C-VN-0014",
+      "C-VN-0007"
+    ],
+    [
+      "C-VN-0002",
+      "C-VN-0005"
+    ],
+    [
+      "C-TH-0010",
+      "C-TH-0014"
+    ],
+    [
+      "C-SG-0010",
+      "C-SG-0004"
+    ]
+  ],
+  "duplicate_items": [
+    {
+      "duplicate": "A-1018",
+      "original": "A-1001"
+    },
+    {
+      "duplicate": "B-1018",
+      "original": "B-1006"
+    }
+  ],
+  "duplicate_vendors": [
+    {
+      "duplicate": "V-2100",
+      "original": "V-2010"
+    },
+    {
+      "duplicate": "V-2101",
+      "original": "V-2005"
+    }
+  ],
+  "real_churn": [
+    {
+      "customer_id": "C-MY-0008",
+      "name": "Ipoh Heritage Hospital Sdn Bhd",
+      "decline_from": "2026-03",
+      "last_month": "2026-07"
+    },
+    {
+      "customer_id": "C-ID-0017",
+      "name": "PT Yogyakarta Klinik Group",
+      "decline_from": "2026-01",
+      "last_month": "2026-04"
+    },
+    {
+      "customer_id": "C-TH-0019",
+      "name": "Pattaya Bay Hospital Co., Ltd.",
+      "decline_from": "2026-02",
+      "last_month": "2026-06"
+    },
+    {
+      "customer_id": "C-VN-0013",
+      "name": "Hue Heritage Clinic",
+      "decline_from": "2026-02",
+      "last_month": "2026-05"
+    }
+  ],
+  "new_customers": [
+    {
+      "customer_id": "C-SG-0028",
+      "name": "Tengah Medical Centre Pte Ltd",
+      "country": "SG",
+      "setup_submitted": "2026-01-19",
+      "account_created": "2026-02-08",
+      "first_order_month": "2026-02"
+    },
+    {
+      "customer_id": "C-MY-0024",
+      "name": "Cyberjaya Specialist Centre Sdn Bhd",
+      "country": "MY",
+      "setup_submitted": "2025-11-24",
+      "account_created": "2025-12-09",
+      "first_order_month": "2025-12"
+    },
+    {
+      "customer_id": "C-MY-0025",
+      "name": "Seremban Lab Services Sdn Bhd",
+      "country": "MY",
+      "setup_submitted": "2026-04-27",
+      "account_created": "2026-05-07",
+      "first_order_month": "2026-05"
+    },
+    {
+      "customer_id": "C-ID-0019",
+      "name": "PT Bali Nusa Medical Centre",
+      "country": "ID",
+      "setup_submitted": "2026-02-02",
+      "account_created": "2026-02-20",
+      "first_order_month": "2026-02"
+    },
+    {
+      "customer_id": "C-ID-0022",
+      "name": "PT Makassar Harapan Hospital",
+      "country": "ID",
+      "setup_submitted": "2026-05-11",
+      "account_created": "2026-05-25",
+      "first_order_month": "2026-06"
+    },
+    {
+      "customer_id": "C-ID-0020",
+      "name": "PT Rumah Sakit Tangerang Prima",
+      "country": "ID",
+      "setup_submitted": "2026-03-09",
+      "account_created": "2026-04-03",
+      "first_order_month": "2026-04"
+    },
+    {
+      "customer_id": "C-ID-0023",
+      "name": "PT Rumah Sakit Palembang Mitra",
+      "country": "ID",
+      "setup_submitted": "2026-06-15",
+      "account_created": "2026-07-14",
+      "first_order_month": "2026-07"
+    },
+    {
+      "customer_id": "C-ID-0018",
+      "name": "PT Rumah Sakit Medan Kasih",
+      "country": "ID",
+      "setup_submitted": "2026-01-12",
+      "account_created": "2026-02-04",
+      "first_order_month": "2026-02"
+    },
+    {
+      "customer_id": "C-ID-0021",
+      "name": "PT Rumah Sakit Bandung Sehat",
+      "country": "ID",
+      "setup_submitted": "2026-04-06",
+      "account_created": "2026-05-02",
+      "first_order_month": "2026-05"
+    },
+    {
+      "customer_id": "C-TH-0020",
+      "name": "Khon Kaen Medical Centre Co., Ltd.",
+      "country": "TH",
+      "setup_submitted": "2026-03-02",
+      "account_created": "2026-03-22",
+      "first_order_month": "2026-03"
+    },
+    {
+      "customer_id": "C-VN-0015",
+      "name": "Can Tho Mekong Hospital",
+      "country": "VN",
+      "setup_submitted": "2026-01-26",
+      "account_created": "2026-02-08",
+      "first_order_month": "2026-02"
+    },
+    {
+      "customer_id": "C-VN-0017",
+      "name": "Binh Duong International Hospital",
+      "country": "VN",
+      "setup_submitted": "2026-04-20",
+      "account_created": "2026-05-15",
+      "first_order_month": "2026-05"
+    }
+  ],
+  "pending_setups": [
+    {
+      "prospect_id": "P-ID-001",
+      "name": "PT Rumah Sakit Semarang Diagnostika",
+      "country": "ID",
+      "setup_submitted": "2026-09-14"
+    },
+    {
+      "prospect_id": "P-ID-002",
+      "name": "PT Bekasi Lab Services",
+      "country": "ID",
+      "setup_submitted": "2026-09-21"
+    },
+    {
+      "prospect_id": "P-ID-003",
+      "name": "PT Rumah Sakit Jakarta Utara",
+      "country": "ID",
+      "setup_submitted": "2026-09-08"
+    },
+    {
+      "prospect_id": "P-ID-004",
+      "name": "PT Depok Medika Clinic",
+      "country": "ID",
+      "setup_submitted": "2026-09-24"
+    },
+    {
+      "prospect_id": "P-ID-005",
+      "name": "PT Rumah Sakit Bogor Sehat",
+      "country": "ID",
+      "setup_submitted": "2026-09-16"
+    },
+    {
+      "prospect_id": "P-VN-006",
+      "name": "Da Nang Coastal Hospital",
+      "country": "VN",
+      "setup_submitted": "2026-09-10"
+    },
+    {
+      "prospect_id": "P-VN-007",
+      "name": "Nha Trang Bay Hospital",
+      "country": "VN",
+      "setup_submitted": "2026-09-22"
+    },
+    {
+      "prospect_id": "P-MY-008",
+      "name": "Kota Kinabalu Specialist Centre Sdn Bhd",
+      "country": "MY",
+      "setup_submitted": "2026-09-17"
+    },
+    {
+      "prospect_id": "P-MY-009",
+      "name": "Putrajaya Diagnostics Centre Sdn Bhd",
+      "country": "MY",
+      "setup_submitted": "2026-09-25"
+    },
+    {
+      "prospect_id": "P-SG-010",
+      "name": "Punggol Women's Clinic Pte Ltd",
+      "country": "SG",
+      "setup_submitted": "2026-09-23"
+    },
+    {
+      "prospect_id": "P-TH-011",
+      "name": "Phuket Andaman Hospital Co., Ltd.",
+      "country": "TH",
+      "setup_submitted": "2026-09-11"
+    }
+  ],
+  "trends": {
+    "SG": {
+      "A": 1.002,
+      "B": 1.0,
+      "C": 1.004
+    },
+    "MY": {
+      "A": 1.008,
+      "B": 1.018,
+      "C": 1.006
+    },
+    "ID": {
+      "A": 1.012,
+      "B": 1.012,
+      "C": 1.01
+    },
+    "TH": {
+      "A": 0.998,
+      "B": 0.99,
+      "C": 1.0
+    },
+    "VN": {
+      "A": 1.01,
+      "B": 1.008,
+      "C": 1.03
+    }
+  }
+}

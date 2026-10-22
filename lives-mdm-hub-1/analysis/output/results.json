@@ -1,0 +1,499 @@
+{
+  "forecast_gain": {
+    "baseline_wape": 0.171,
+    "ours_wape": 0.117,
+    "baseline_bias": -0.133,
+    "ours_bias": -0.022,
+    "relative_reduction": 0.316,
+    "ours_swing": 0.074,
+    "naive_wape": 0.114,
+    "naive_swing": 0.151
+  },
+  "implications": [
+    {
+      "title": "Indonesia is the growth market",
+      "text": "Product A grew 12% and Product B 11% quarter on quarter. 6 Indonesian hospitals opened accounts this year and 5 more are waiting on setup, worth about SGD 110k a month.",
+      "action": "Fast-track Indonesian account setups and plan extra Product A and B stock for Q4."
+    },
+    {
+      "title": "Vietnam's instrument growth rests on three hospitals",
+      "text": "Product C grew 52% quarter on quarter, and all of that volume came from just three hospitals.",
+      "action": "Win more instrument and service accounts in Vietnam before planning on this growth continuing."
+    },
+    {
+      "title": "Thailand lab consumables are falling",
+      "text": "Product B fell 11% quarter on quarter; Pattaya Bay Hospital, worth about SGD 48k a month, has not ordered since 29 Jun.",
+      "action": "Account manager to call Pattaya Bay this week and review the competing offer."
+    },
+    {
+      "title": "Hospitals that buy two product lines but not the third",
+      "text": "17 hospitals buy reagents and consumables but no instruments or service, while most similar hospitals buy all three. Potential: about SGD 57k a month.",
+      "action": "Give the target list to the instruments team (QTG) for Q4 visits."
+    },
+    {
+      "title": "Forecasts that keep up with growth",
+      "text": "Today's 6-month average under-forecast by 13% because it lags behind growth. The combined method cuts forecast error from 17.1% to 11.7% and refreshes in seconds.",
+      "action": "Use the combined forecast for monthly stock planning; review it with country teams instead of rebuilding spreadsheets."
+    },
+    {
+      "title": "Duplicate records distort the customer view",
+      "text": "10 customers exist twice in SAP B1. Before merging, 2 of 5 'going quiet' alerts were false, 3 'new accounts' were existing customers, and a Malaysian hospital's Product B orders were counted in Singapore.",
+      "action": "Merge the duplicate records and stop new ones at the request form."
+    }
+  ],
+  "dedup_quality": {
+    "planted": 10,
+    "found": 10,
+    "false_merges": 0,
+    "review_pairs": 1
+  },
+  "dedup_impact": {
+    "records": 116,
+    "customers": 106,
+    "active_q3": {
+      "raw": 112,
+      "dedup": 103
+    },
+    "going_quiet": {
+      "raw": 5,
+      "dedup": 3,
+      "false": 2
+    },
+    "new_accounts_q3": {
+      "raw": 4,
+      "dedup": 1
+    },
+    "stopped_accounts_q3": {
+      "raw": 4,
+      "dedup": 3
+    },
+    "cross_sell": {
+      "raw": 17,
+      "dedup": 17,
+      "false": 1,
+      "missed": 1,
+      "missed_names": [
+        "National University Hospital"
+      ]
+    },
+    "my_b_q3": {
+      "raw": 16308.0,
+      "dedup": 19195.0,
+      "growth_raw": 0.109,
+      "growth_dedup": 0.087
+    },
+    "sg_b_q3": {
+      "raw": 25362.0,
+      "dedup": 22475.0
+    },
+    "vn_c_top3": {
+      "raw": 1.0,
+      "dedup": 1.0
+    }
+  },
+  "history": {
+    "requests": 354,
+    "per_month": 29.5,
+    "completed": 328,
+    "open": 26,
+    "mean": 18.0,
+    "median": 16.4,
+    "p90": 28.8,
+    "max": 46.3,
+    "bounce_rate": 0.384,
+    "approvals_mean": 2.8,
+    "clarification_rate": 0.345,
+    "by_domain": [
+      {
+        "domain": "Cost centre",
+        "requests": 54,
+        "mean": 14.4
+      },
+      {
+        "domain": "Customer",
+        "requests": 92,
+        "mean": 21.0
+      },
+      {
+        "domain": "Item",
+        "requests": 126,
+        "mean": 18.0
+      },
+      {
+        "domain": "Vendor",
+        "requests": 56,
+        "mean": 16.4
+      }
+    ],
+    "histogram": [
+      0.0,
+      0.003,
+      0.0152,
+      0.0427,
+      0.0671,
+      0.1159,
+      0.1159,
+      0.122,
+      0.1006,
+      0.0701,
+      0.0732,
+      0.0762,
+      0.0427,
+      0.0396,
+      0.0396,
+      0.0213,
+      0.0122,
+      0.0061,
+      0.0091,
+      0.0274
+    ],
+    "approval_counts": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "approval_probs": [
+      0.359,
+      0.486,
+      0.147,
+      0.008
+    ]
+  },
+  "sim": {
+    "current": {
+      "mean": 18.6,
+      "median": 17.3,
+      "p90": 28.8,
+      "share_within_5": 0.003
+    },
+    "proposed": {
+      "mean": 3.0,
+      "median": 2.8,
+      "p90": 4.7,
+      "share_within_5": 0.931
+    },
+    "edges": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24,
+      26,
+      28,
+      30,
+      32,
+      34,
+      36,
+      38,
+      40
+    ],
+    "current_hist": [
+      0.0,
+      0.0004,
+      0.0095,
+      0.0326,
+      0.0651,
+      0.0921,
+      0.1084,
+      0.1182,
+      0.1112,
+      0.0978,
+      0.0847,
+      0.0707,
+      0.054,
+      0.0416,
+      0.0319,
+      0.0218,
+      0.0164,
+      0.0126,
+      0.009,
+      0.0218
+    ],
+    "proposed_hist": [
+      0.2362,
+      0.5612,
+      0.1792,
+      0.0204,
+      0.0024,
+      0.0003,
+      0.0002,
+      0.0001,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "params_current": {
+      "triage_mean": 1.3,
+      "triage_sd": 0.9,
+      "bounce_p": 0.4,
+      "bounce_mean": 4.0,
+      "bounce_sd": 3.0,
+      "approver_mean": 4.6,
+      "approver_sd": 3.6,
+      "clar_p": 0.15,
+      "clar_mean": 2.5,
+      "clar_sd": 1.5,
+      "keying_mean": 1.5,
+      "keying_sd": 1.0
+    },
+    "params_proposed": {
+      "routing_mean": 0.05,
+      "bounce_p": 0.05,
+      "bounce_mean": 1.5,
+      "bounce_sd": 1.0,
+      "approver_mean": 1.4,
+      "approver_sd": 1.2,
+      "sla_days": 2.8,
+      "after_reminder_mean": 0.7,
+      "after_reminder_sd": 0.6,
+      "escalate_days": 4.2,
+      "after_escalation_mean": 0.4,
+      "after_escalation_sd": 0.3,
+      "clar_p": 0.08,
+      "clar_mean": 1.5,
+      "clar_sd": 1.0,
+      "check_mean": 0.6,
+      "check_sd": 0.4
+    }
+  },
+  "impacts": {
+    "mdm_hours": 218,
+    "requester_hours": 148,
+    "approver_hours": 99,
+    "duplicates_prevented": 7.6,
+    "duplicate_hours": 45,
+    "forecast_hours": 168,
+    "triage_hours": 87,
+    "total_hours": 765,
+    "fte": 0.5,
+    "annual_benefit_sgd": 42100.0,
+    "build_cost_sgd": 20600,
+    "payback_months": 5.9,
+    "customer_setup_days_today": 21.0,
+    "customer_setup_days_hub": 3.0,
+    "days_saved_per_setup": 18.0,
+    "new_accounts_per_year": 23,
+    "revenue_pulled_forward_sgd": 393000.0,
+    "value_waited_on_setup_sgd": 230000.0,
+    "requests_per_year": 354,
+    "customer_setups_per_year": 105,
+    "messages_per_year": 3605
+  },
+  "triage": {
+    "accuracy": 0.9667,
+    "test_size": 902,
+    "train_size": 2703,
+    "per_class": [
+      {
+        "cls": "purchase_order",
+        "label": "Purchase order",
+        "precision": 0.996,
+        "recall": 0.96,
+        "support": 544
+      },
+      {
+        "cls": "enquiry",
+        "label": "Enquiry",
+        "precision": 0.965,
+        "recall": 1.0,
+        "support": 164
+      },
+      {
+        "cls": "setup_request",
+        "label": "Setup request",
+        "precision": 0.783,
+        "recall": 0.931,
+        "support": 58
+      },
+      {
+        "cls": "follow_up",
+        "label": "Follow-up",
+        "precision": 0.95,
+        "recall": 0.971,
+        "support": 136
+      }
+    ],
+    "confusion": {
+      "labels": [
+        "purchase_order",
+        "enquiry",
+        "setup_request",
+        "follow_up"
+      ],
+      "matrix": [
+        [
+          522,
+          6,
+          12,
+          4
+        ],
+        [
+          0,
+          164,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          54,
+          3
+        ],
+        [
+          1,
+          0,
+          3,
+          132
+        ]
+      ]
+    },
+    "auto_share": 0.965,
+    "auto_accuracy": 0.9759
+  },
+  "forecast_methods": [
+    {
+      "code": "naive",
+      "label": "Last month",
+      "wape": 0.114,
+      "bias": -0.051,
+      "swing": 0.151,
+      "by_product": {
+        "A": {
+          "wape": 0.112,
+          "bias": -0.049
+        },
+        "B": {
+          "wape": 0.095,
+          "bias": -0.051
+        },
+        "C": {
+          "wape": 0.216,
+          "bias": -0.067
+        }
+      }
+    },
+    {
+      "code": "ma6",
+      "label": "6-month average (today)",
+      "wape": 0.171,
+      "bias": -0.133,
+      "swing": 0.045,
+      "by_product": {
+        "A": {
+          "wape": 0.182,
+          "bias": -0.145
+        },
+        "B": {
+          "wape": 0.133,
+          "bias": -0.099
+        },
+        "C": {
+          "wape": 0.231,
+          "bias": -0.174
+        }
+      }
+    },
+    {
+      "code": "ma_all",
+      "label": "Average of all months",
+      "wape": 0.186,
+      "bias": -0.149,
+      "swing": 0.023,
+      "by_product": {
+        "A": {
+          "wape": 0.195,
+          "bias": -0.159
+        },
+        "B": {
+          "wape": 0.154,
+          "bias": -0.117
+        },
+        "C": {
+          "wape": 0.246,
+          "bias": -0.197
+        }
+      }
+    },
+    {
+      "code": "damped",
+      "label": "Damped trend per series",
+      "wape": 0.119,
+      "bias": -0.029,
+      "swing": 0.075,
+      "by_product": {
+        "A": {
+          "wape": 0.128,
+          "bias": -0.035
+        },
+        "B": {
+          "wape": 0.086,
+          "bias": -0.018
+        },
+        "C": {
+          "wape": 0.179,
+          "bias": -0.024
+        }
+      }
+    },
+    {
+      "code": "pooled",
+      "label": "Pooled regional, split by share",
+      "wape": 0.123,
+      "bias": -0.015,
+      "swing": 0.076,
+      "by_product": {
+        "A": {
+          "wape": 0.127,
+          "bias": -0.018
+        },
+        "B": {
+          "wape": 0.094,
+          "bias": -0.007
+        },
+        "C": {
+          "wape": 0.211,
+          "bias": -0.025
+        }
+      }
+    },
+    {
+      "code": "combined",
+      "label": "Combined (our method)",
+      "wape": 0.117,
+      "bias": -0.022,
+      "swing": 0.074,
+      "by_product": {
+        "A": {
+          "wape": 0.122,
+          "bias": -0.026
+        },
+        "B": {
+          "wape": 0.088,
+          "bias": -0.012
+        },
+        "C": {
+          "wape": 0.19,
+          "bias": -0.024
+        }
+      }
+    }
+  ]
+}

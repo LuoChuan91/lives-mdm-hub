@@ -1,0 +1,25 @@
+vendor_code,name,country,vendor_type,reg_no,bank_name,bank_account,swift,payment_terms,created
+V-2001,Meridian Dx Inc.,US,Product principal / manufacturer,US11291610,Atlantic Union Bank,823260436426,AUBKUS33,Net 60,2018-09-13
+V-2002,Sorell Biotech GmbH,DE,Product principal / manufacturer,DE59327098,Rhein Handelsbank,152831102240,RHBKDEFF,Net 30,2023-04-25
+V-2003,Kanto Assay Systems K.K.,JP,Product principal / manufacturer,JP80531142,Kanto Commercial Bank,030347375735,KCBKJPJT,Net 30,2012-09-24
+V-2004,Lumen Diagnostics Ltd,GB,Product principal / manufacturer,GB17110115,Thames Merchant Bank,619018119038,TMBKGB2L,Net 60,2013-10-26
+V-2005,Nordic Labware AB,SE,Product principal / manufacturer,SE30246514,Baltic Nordic Bank,563338065772,BNBKSESS,Net 45,2012-06-12
+V-2006,Pacifica Medical Pty Ltd,AU,Product principal / manufacturer,AU83108074,Southern Cross Bank,739536498024,SCRBAU2S,Net 60,2019-11-05
+V-2007,Arden Instruments Inc.,US,Product principal / manufacturer,US66733416,Atlantic Union Bank,916600026867,AUBKUS33,Net 45,2014-07-19
+V-2008,"Helix Lab Supplies Co., Ltd.",CN,Product principal / manufacturer,CN87734003,Pearl River Bank,598962867209,PRBKCNSH,Net 45,2019-01-24
+V-2009,"Tanaka Medical Co., Ltd.",JP,Product principal / manufacturer,JP35723471,Kanto Commercial Bank,021463121850,KCBKJPJT,Net 45,2018-09-18
+V-2010,SwiftChain Logistics Pte Ltd,SG,Logistics,SG74972315,Straits Commercial Bank,104339870202,SCBKSGSG,Net 45,2015-09-03
+V-2011,ColdLink Asia Sdn Bhd,MY,Logistics,MY88595158,Peninsula Trust Bank,155906897808,PTBKMYKL,Net 30,2012-01-24
+V-2012,Nusantara Cold Chain PT,ID,Logistics,ID44887543,Nusantara Raya Bank,651900144709,NRBKIDJA,Net 45,2023-02-10
+V-2013,"Siam Express Freight Co., Ltd.",TH,Logistics,TH13975969,Chao Phraya Bank,414049065619,CPBKTHBK,Net 60,2019-02-26
+V-2014,Mekong Distribution JSC,VN,Logistics,VN30161258,Red River Bank,614068481000,RRBKVNVX,Net 60,2019-05-07
+V-2015,Calibra Metrology Services Pte Ltd,SG,Service provider,SG85393655,Straits Commercial Bank,442055808773,SCBKSGSG,Net 45,2022-05-03
+V-2016,BioSafe Certification Sdn Bhd,MY,Service provider,MY39960365,Peninsula Trust Bank,011793275339,PTBKMYKL,Net 30,2018-02-18
+V-2017,"LabTech Field Engineers Co., Ltd.",TH,Service provider,TH63452151,Chao Phraya Bank,240988382014,CPBKTHBK,Net 45,2012-11-23
+V-2018,Precision Biomedical Repairs PT,ID,Service provider,ID47173452,Nusantara Raya Bank,264622069851,NRBKIDJA,Net 45,2017-10-08
+V-2019,Harbour Packaging Pte Ltd,SG,Other,SG54028455,Straits Commercial Bank,489830649063,SCBKSGSG,Net 45,2016-01-22
+V-2020,Orchid Office Supplies Sdn Bhd,MY,Other,MY11071690,Peninsula Trust Bank,275543858405,PTBKMYKL,Net 60,2020-02-19
+V-2021,Clinical IT Solutions Pte Ltd,SG,Service provider,SG69341921,Straits Commercial Bank,006099282412,SCBKSGSG,Net 60,2014-03-08
+V-2022,"Saigon Biomedical Services Co., Ltd.",VN,Service provider,VN30307579,Red River Bank,340934040281,RRBKVNVX,Net 60,2021-10-03
+V-2100,Swift Chain Logistics,SG,Logistics,,Straits Commercial Bank,104339870202,SCBKSGSG,Net 45,2024-05-09
+V-2101,Nordic Labware Aktiebolag,SE,Product principal / manufacturer,,Baltic Nordic Bank,563338065772,BNBKSESS,Net 45,2024-09-09

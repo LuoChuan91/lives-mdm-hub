@@ -1,0 +1,12 @@
+prospect_id,country,name,segment,size,city,entity,products,setup_submitted,reg_no,address,phone
+P-ID-001,ID,PT Rumah Sakit Semarang Diagnostika,Private hospital,M,Semarang,SPD,AB,2026-09-14,48.009.006.3-585.123,"Jl. Pahlawan No. 234, Semarang 62150, Indonesia",+62 21 6948 4626
+P-ID-002,ID,PT Bekasi Lab Services,Independent lab,S,Bekasi,SPD,AB,2026-09-21,84.474.754.2-681.334,"Jl. Margonda Raya No. 193, Bekasi 25834, Indonesia",+62 21 6863 2180
+P-ID-003,ID,PT Rumah Sakit Jakarta Utara,Private hospital,L,Jakarta,SPD,ABC,2026-09-08,10.531.915.5-140.068,"Jl. Pemuda No. 32, Jakarta 92093, Indonesia",+62 21 8272 7778
+P-ID-004,ID,PT Depok Medika Clinic,Clinic group,S,Depok,QTS,B,2026-09-24,81.856.765.7-528.912,"Jl. Gajah Mada No. 50, Depok 61345, Indonesia",+62 21 2449 5942
+P-ID-005,ID,PT Rumah Sakit Bogor Sehat,Private hospital,M,Bogor,SPD,AB,2026-09-16,72.870.443.2-224.551,"Jl. M.H. Thamrin No. 213, Bogor 99228, Indonesia",+62 21 7625 1362
+P-VN-006,VN,Da Nang Coastal Hospital,Private hospital,L,Da Nang,QTG,ABC,2026-09-10,0632206317,"203 Vo Van Kiet Street, Da Nang, Vietnam",+84 28 1452 2882
+P-VN-007,VN,Nha Trang Bay Hospital,Private hospital,M,Nha Trang,SPD,AB,2026-09-22,0158643310,"119 Nguyen Hue Street, Nha Trang, Vietnam",+84 28 7825 5113
+P-MY-008,MY,Kota Kinabalu Specialist Centre Sdn Bhd,Private hospital,M,Kota Kinabalu,SPD,ABC,2026-09-17,201501395561,"111, Jalan Bangsar, 56217 Kota Kinabalu, Malaysia",+60 3 4946 9546
+P-MY-009,MY,Putrajaya Diagnostics Centre Sdn Bhd,Independent lab,S,Putrajaya,SPD,AB,2026-09-25,201901855369,"128, Jalan Bangsar, 18851 Putrajaya, Malaysia",+60 3 5775 1871
+P-SG-010,SG,Punggol Women's Clinic Pte Ltd,Clinic group,S,Singapore,SPD,AB,2026-09-23,202442045W,"5 Clementi Avenue 3, Singapore 110203",+65 6816 7254
+P-TH-011,TH,"Phuket Andaman Hospital Co., Ltd.",Private hospital,M,Phuket,SPD,ABC,2026-09-11,0162262797895,"243 Silom Road, Phuket 22743, Thailand",+66 2 1988 9147

@@ -1,0 +1,49 @@
+item_code,description,product_line,category,uom,manufacturer,mfr_part_no,licence_no,storage,list_price,entity,created
+A-1001,"HbA1c Reagent Kit, 100 tests",A,IVD reagent,kit,Sorell Biotech,SOR-84123,DE5685062,2-8 °C,203.5,SPD,2022-10-26
+A-1002,"TSH Immunoassay Kit, 200 tests",A,IVD reagent,kit,Tanaka Medical,TAN-40075,DE3327575,2-8 °C,249.75,SPD,2020-12-02
+A-1003,"CRP Reagent, 4 x 50 mL",A,IVD reagent,kit,Meridian Dx,MER-73512,DE7648133,2-8 °C,129.5,SPD,2018-02-03
+A-1004,"High-Sensitivity Troponin I Assay, 100 tests",A,IVD reagent,kit,Kanto Assay Systems,KAN-94601,DE8948742,2-8 °C,296.0,SPD,2023-05-09
+A-1005,"Glucose Reagent, 4 x 100 mL",A,IVD reagent,kit,Kanto Assay Systems,KAN-62307,DE6489430,Ambient,101.75,SPD,2023-11-21
+A-1006,Lipid Panel Calibrator Set,A,IVD reagent,kit,Kanto Assay Systems,KAN-31749,DE4589953,2-8 °C,157.25,SPD,2020-12-16
+A-1007,"Ferritin Immunoassay Kit, 100 tests",A,IVD reagent,kit,Arden Instruments,ARD-23607,DE8608943,2-8 °C,222.0,SPD,2017-05-21
+A-1008,"Vitamin D Total Assay, 100 tests",A,IVD reagent,kit,Meridian Dx,MER-22660,DE4720142,2-8 °C,268.25,SPD,2021-09-26
+A-1009,"Procalcitonin Assay Kit, 50 tests",A,IVD reagent,kit,Sorell Biotech,SOR-32780,DE6039621,2-8 °C,286.75,SPD,2022-08-11
+A-1010,"Creatinine Enzymatic Reagent, 4 x 60 mL",A,IVD reagent,kit,Kanto Assay Systems,KAN-60779,DE8245720,2-8 °C,120.25,SPD,2020-02-06
+A-1011,"ALT/AST Reagent Pack, 2 x 100 tests",A,IVD reagent,kit,Nordic Labware,NOR-22108,DE2356192,2-8 °C,138.75,SPD,2021-06-21
+A-1012,"Dengue NS1 Rapid Test, 25 tests",A,IVD reagent,kit,Helix Lab Supplies,HEL-91813,DE4148873,Ambient,166.5,SPD,2023-02-14
+A-1013,"COVID-19/Flu A+B Antigen Rapid Test, 25 tests",A,IVD reagent,kit,Tanaka Medical,TAN-90629,DE1180176,Ambient,148.0,SPD,2024-11-14
+A-1014,"Hematology Control, 3 levels",A,IVD reagent,kit,Meridian Dx,MER-30001,DE3093804,2-8 °C,175.75,SPD,2019-07-21
+A-1015,"Coagulation PT Reagent, 10 x 4 mL",A,IVD reagent,kit,Pacifica Medical,PAC-53304,DE5330014,2-8 °C,194.25,SPD,2017-03-24
+A-1016,"Urinalysis Test Strips, 100 strips",A,IVD reagent,kit,Pacifica Medical,PAC-41546,DE8906735,Ambient,74.0,SPD,2017-04-23
+A-1017,"D-Dimer Immunoassay, 100 tests",A,IVD reagent,kit,Nordic Labware,NOR-68221,DE6808433,2-8 °C,240.5,SPD,2019-11-15
+A-1018,HbA1c RGT KIT 100T,A,IVD reagent,kit,Sorell Biotech,SOR-84123,DE5685062,2-8 °C,203.5,QTS,2025-03-18
+B-1001,"Vacuum Blood Collection Tube, EDTA 4 mL, 100/box",B,Lab consumable,box,Kanto Assay Systems,KAN-23269,,,19.2,QTS,2019-07-04
+B-1002,"Vacuum Blood Collection Tube, Serum 5 mL, 100/box",B,Lab consumable,box,Tanaka Medical,TAN-41944,,,20.4,QTS,2024-10-04
+B-1003,"Pipette Tips, 200 uL, 1000/box",B,Lab consumable,box,Lumen Diagnostics,LUM-22048,,,14.4,QTS,2023-05-09
+B-1004,"Pipette Tips, 1000 uL, 1000/box",B,Lab consumable,box,Helix Lab Supplies,HEL-66070,,,16.8,QTS,2016-01-01
+B-1005,"Specimen Container, 60 mL, 500/case",B,Lab consumable,case,Sorell Biotech,SOR-48754,,,50.4,QTS,2019-05-25
+B-1006,"Nitrile Examination Gloves, Medium, 100/box",B,Lab consumable,box,Pacifica Medical,PAC-74078,,,10.8,QTS,2017-03-07
+B-1007,"Nitrile Examination Gloves, Large, 100/box",B,Lab consumable,box,Kanto Assay Systems,KAN-75309,,,10.8,QTS,2016-01-18
+B-1008,"Microscope Slides, Frosted, 72/box",B,Lab consumable,box,Sorell Biotech,SOR-95249,,,13.2,QTS,2016-08-11
+B-1009,"Cryovials, 2 mL, 500/case",B,Lab consumable,case,Arden Instruments,ARD-91589,,,43.2,QTS,2019-08-22
+B-1010,"Centrifuge Tubes, 15 mL, 500/case",B,Lab consumable,case,Nordic Labware,NOR-54069,,,36.0,QTS,2019-09-27
+B-1011,"Urine Collection Cups, Sterile, 100/box",B,Lab consumable,box,Kanto Assay Systems,KAN-34950,,,15.6,QTS,2022-05-07
+B-1012,"Safety Lancets, 21G, 200/box",B,Lab consumable,box,Meridian Dx,MER-40221,,,18.0,QTS,2020-04-20
+B-1013,"Biohazard Bags, Large, 100/box",B,Lab consumable,box,Lumen Diagnostics,LUM-39572,,,12.0,QTS,2017-05-17
+B-1014,"Swab Collection Kit with VTM, 50/box",B,Lab consumable,box,Pacifica Medical,PAC-68105,,,45.6,QTS,2019-03-27
+B-1015,"PCR Plates, 96-well, 50/box",B,Lab consumable,box,Arden Instruments,ARD-90992,,,57.6,QTS,2021-10-26
+B-1016,"Sample Cups for Analyzers, 1000/box",B,Lab consumable,box,Kanto Assay Systems,KAN-87903,,,21.6,QTS,2021-12-26
+B-1017,"Cuvettes, Semi-micro, 500/box",B,Lab consumable,box,Tanaka Medical,TAN-93134,,,26.4,QTS,2024-09-27
+B-1018,Gloves Nitrile Exam M (100s),B,Lab consumable,box,Pacifica Medical,PAC-74078,,,10.8,SPD,2024-11-04
+C-1001,Chemistry Analyzer Preventive Maintenance Visit,C,Service,visit,Sorell Biotech,SOR-70519,,,797.5,QTG,2024-08-09
+C-1002,"Hematology Analyzer Service Contract, monthly",C,Service,month,Sorell Biotech,SOR-87892,,,1015.0,QTG,2016-12-05
+C-1003,Immunoassay Analyzer Calibration Visit,C,Service,visit,Pacifica Medical,PAC-85652,,,652.5,QTG,2018-01-18
+C-1004,"Benchtop Centrifuge, 24-place",C,Instrument,unit,Tanaka Medical,TAN-86044,,,3480.0,QTG,2019-03-06
+C-1005,Biosafety Cabinet Certification,C,Service,visit,Helix Lab Supplies,HEL-57768,,,507.5,QTG,2022-10-25
+C-1006,Point-of-Care HbA1c Analyzer,C,Medical device,unit,Kanto Assay Systems,KAN-41125,DE2657544,,4640.0,QTG,2021-11-23
+C-1007,"Blood Gas Analyzer Cartridge Service, monthly",C,Service,month,Helix Lab Supplies,HEL-75353,,,1160.0,QTG,2023-12-02
+C-1008,"Laboratory Refrigerator, 2-8 °C, 400 L",C,Instrument,unit,Nordic Labware,NOR-12828,,,4060.0,QTG,2017-04-26
+C-1009,"Coagulation Analyzer Service Contract, monthly",C,Service,month,Pacifica Medical,PAC-62850,,,942.5,QTG,2016-04-01
+C-1010,"Urine Analyzer, Semi-automated",C,Medical device,unit,Tanaka Medical,TAN-46503,DE5856910,,3190.0,QTG,2023-01-26
+C-1011,Analyzer Interface Integration (LIS),C,Service,visit,Pacifica Medical,PAC-75243,,,2030.0,QTG,2017-06-17
+C-1012,"Centrifuge Rotor, 24 Place",C,Instrument,unit,Helix Lab Supplies,HEL-55727,,,870.0,QTG,2021-07-09

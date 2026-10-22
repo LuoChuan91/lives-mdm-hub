@@ -1,0 +1,321 @@
+{
+  "note": "Shared name-normalisation rules. Read by analysis/dedup.py (batch) and assets/engine.js (live check) so both score records identically.",
+  "phrases": [
+    [
+      "public company limited",
+      ""
+    ],
+    [
+      "joint stock company",
+      ""
+    ],
+    [
+      "company limited",
+      ""
+    ],
+    [
+      "co ltd",
+      ""
+    ],
+    [
+      "sdn bhd",
+      ""
+    ],
+    [
+      "pte ltd",
+      ""
+    ],
+    [
+      "rumah sakit umum daerah",
+      "hospital"
+    ],
+    [
+      "rumah sakit",
+      "hospital"
+    ],
+    [
+      "benh vien",
+      "hospital"
+    ],
+    [
+      "sai gon",
+      "saigon"
+    ],
+    [
+      "ha noi",
+      "hanoi"
+    ],
+    [
+      "da nang",
+      "danang"
+    ],
+    [
+      "chiang mai",
+      "chiangmai"
+    ],
+    [
+      "kuala lumpur",
+      "kualalumpur"
+    ],
+    [
+      "ho chi minh city",
+      "hcmc"
+    ],
+    [
+      "ho chi minh",
+      "hcmc"
+    ],
+    [
+      "johor bahru",
+      "johorbahru"
+    ],
+    [
+      "hat yai",
+      "hatyai"
+    ],
+    [
+      "khon kaen",
+      "khonkaen"
+    ],
+    [
+      "women s",
+      "women"
+    ],
+    [
+      "children s",
+      "children"
+    ],
+    [
+      "swift chain",
+      "swiftchain"
+    ]
+  ],
+  "strip_tokens": [
+    "pte",
+    "ltd",
+    "limited",
+    "sdn",
+    "bhd",
+    "berhad",
+    "pt",
+    "tbk",
+    "inc",
+    "llc",
+    "plc",
+    "jsc",
+    "pcl",
+    "co",
+    "corp",
+    "corporation",
+    "company",
+    "gmbh",
+    "ag",
+    "ab",
+    "kk",
+    "pty",
+    "aktiebolag",
+    "srl",
+    "bv"
+  ],
+  "abbrev": {
+    "hosp": "hospital",
+    "natl": "national",
+    "nat": "national",
+    "univ": "university",
+    "uni": "university",
+    "med": "medical",
+    "ctr": "centre",
+    "cntr": "centre",
+    "center": "centre",
+    "lab": "laboratory",
+    "labs": "laboratory",
+    "laboratories": "laboratory",
+    "dept": "department",
+    "intl": "international",
+    "gen": "general",
+    "spec": "specialist",
+    "svcs": "services",
+    "svc": "services",
+    "srvs": "services",
+    "diag": "diagnostics",
+    "diagnostic": "diagnostics",
+    "clin": "clinic",
+    "rs": "hospital",
+    "rsu": "hospital",
+    "rsud": "hospital",
+    "bv": "hospital",
+    "hlth": "health",
+    "grp": "group"
+  },
+  "generic": [
+    "hospital",
+    "medical",
+    "centre",
+    "clinic",
+    "clinics",
+    "laboratory",
+    "diagnostics",
+    "general",
+    "specialist",
+    "health",
+    "healthcare",
+    "group",
+    "services",
+    "service",
+    "care",
+    "integrated",
+    "international",
+    "community",
+    "family",
+    "polyclinic",
+    "institute",
+    "research",
+    "heart",
+    "eye",
+    "ent",
+    "women",
+    "children",
+    "pathology",
+    "dental",
+    "wellness",
+    "screening",
+    "sports",
+    "medicine",
+    "renal",
+    "dialysis",
+    "biomedical",
+    "provincial",
+    "regional",
+    "central",
+    "biotech",
+    "logistics",
+    "freight",
+    "supplies",
+    "solutions",
+    "systems",
+    "instruments",
+    "express",
+    "distribution",
+    "certification",
+    "repairs",
+    "engineers",
+    "field",
+    "office",
+    "packaging",
+    "metrology",
+    "cold",
+    "chain",
+    "singapore",
+    "malaysia",
+    "indonesia",
+    "thailand",
+    "vietnam",
+    "and",
+    "the",
+    "of"
+  ],
+  "kinds": {
+    "hospital": "H",
+    "laboratory": "L",
+    "diagnostics": "L",
+    "pathology": "L",
+    "clinic": "C",
+    "clinics": "C",
+    "polyclinic": "C",
+    "dental": "C",
+    "institute": "R",
+    "research": "R"
+  },
+  "stopwords": [
+    "of",
+    "the",
+    "and",
+    "for",
+    "de",
+    "at",
+    "by"
+  ],
+  "item_abbrev": {
+    "rgt": "reagent",
+    "rgnt": "reagent",
+    "tst": "test",
+    "tests": "test",
+    "t": "test",
+    "exam": "examination",
+    "m": "medium",
+    "med": "medium",
+    "lg": "large",
+    "l": "large",
+    "sm": "small",
+    "pk": "pack",
+    "bx": "box",
+    "s": "",
+    "pcs": "",
+    "x": "x",
+    "ul": "ul",
+    "kits": "kit",
+    "gloves": "glove",
+    "tubes": "tube"
+  },
+  "thresholds": {
+    "likely": 90,
+    "possible": 75
+  },
+  "item_generic": [
+    "kit",
+    "reagent",
+    "test",
+    "box",
+    "pack",
+    "assay",
+    "immunoassay",
+    "tube",
+    "contract",
+    "service",
+    "analyzer",
+    "analyser",
+    "monthly",
+    "visit",
+    "unit",
+    "vacuum",
+    "blood",
+    "collection",
+    "ml",
+    "ul",
+    "case",
+    "sterile",
+    "examination",
+    "rapid",
+    "high",
+    "sensitivity",
+    "total",
+    "control",
+    "level",
+    "set",
+    "per",
+    "x",
+    "with",
+    "for",
+    "and",
+    "of",
+    "semi",
+    "automated",
+    "tip",
+    "place",
+    "cup",
+    "bag",
+    "plate"
+  ],
+  "item_variants": [
+    "small",
+    "medium",
+    "large",
+    "edta",
+    "serum",
+    "heparin",
+    "citrate",
+    "fluoride",
+    "frosted",
+    "plain"
+  ]
+}
