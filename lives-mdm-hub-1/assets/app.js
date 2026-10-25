@@ -11,7 +11,7 @@
   E.loadModel(H.triage.model);
   const ENV = window.HUB_ENV || 'pages';
   const STORE_KEY = 'mdm-hub-state-v4';
-  const UI_KEY = 'mdm-hub-ui-v4';
+  const UI_KEY = 'mdm-hub-ui-v4-' + window.HUB_USER.username;
   const App = (window.App = { views: {}, actions: {}, H, E, C, esc });
 
   let state = null;
@@ -32,7 +32,7 @@
       showErrors: false, lastSubmitted: null, drawer: null, revealed: {}, confirmReset: false, menuOpen: false, auditFilter: '',
     }, saved || {});
     ui.drawer = null; ui.confirmReset = false; ui.revealed = {};
-    if (!E.personById(state.config, ui.persona)) ui.persona = 'amy';
+    ui.persona = window.HUB_USER.persona;
   }
   function save() {
     try {
@@ -150,12 +150,23 @@
   }
   App.go = go;
 
+  function allowed(route) {
+    const role = window.HUB_USER.role;
+    if (['desk', 'admin'].includes(route)) return role === 'mdm';
+    if (route === 'request') return role === 'requester';
+    return true;
+  }
   function render() {
+    ui.persona = window.HUB_USER.persona;
+    state.now = new Date().toISOString().slice(0, 16);
+    E.tick(state, state.now);
+    if (!allowed(ui.route)) ui.route = 'home';
     const active = document.activeElement;
     const activeId = active && active.id;
     let sel = null;
     if (active && 'selectionStart' in active) { try { sel = [active.selectionStart, active.selectionEnd]; } catch (e) { sel = null; } }
     const rail = document.getElementById('rail');
+    document.getElementById('account-name').textContent = window.HUB_USER.username;
     rail.innerHTML = renderRail();
     rail.dataset.open = String(!!ui.menuOpen);
     const view = App.views[ui.route] || App.views.home;
@@ -180,7 +191,6 @@
 
   function renderRail() {
     const p = person(ui.persona);
-    const groups = [['Requestors', 'requester'], ['Approvers', 'approver'], ['MDM team', 'mdm']];
     const myTasks = openTasksFor(ui.persona).length + state.requests.filter((r) => r.status === 'Needs info' && r.requester === ui.persona).length;
     const open = state.requests.filter((r) => !['Completed', 'Rejected'].includes(r.status)).length;
     const deskCount = state.requests.filter((r) => ['MDM check', 'Ready for SAP import'].includes(r.status)).length;
@@ -195,22 +205,8 @@
         <div class="brand"><div class="brand-mark">MDM</div><div><div class="brand-name">MDM Request Hub</div><div class="brand-sub">Lives Group · prototype · synthetic data</div></div></div>
         <button class="btn small menu-toggle" data-action="menu" aria-expanded="${ui.menuOpen}">${ui.menuOpen ? 'Close' : 'Menu'}</button>
       </div>
-      <div class="persona">
-        <label class="label" for="persona-select">Viewing as</label>
-        <select id="persona-select" data-action="persona">${groups.map(([g, k]) => `<optgroup label="${g}">${state.config.people.filter((x) => x.kind === k).map((x) => `<option value="${x.id}" ${x.id === ui.persona ? 'selected' : ''}>${esc(x.name)} · ${esc(x.title)}</option>`).join('')}</optgroup>`).join('')}</select>
-        <div class="persona-meta">${avatar(ui.persona, 'accent')}<div class="persona-title"><b>${esc(p.name)}</b><br>${esc(p.title)}${p.bu ? ' · ' + esc(p.bu) : p.kind === 'requester' ? ' · business unit not set up yet' : ''}</div></div>
-      </div>
-      <nav class="nav" aria-label="Main">${nav.map(link).join('')}<div class="nav-group label">Insights</div>${insights.map(link).join('')}</nav>
-      <div class="clock">
-        <span class="label">Simulated clock</span>
-        <div class="clock-time">${esc(fmtDT(state.now))}</div>
-        <div class="clock-extra stack tight">
-          <button class="btn small block" data-action="advance">Next working day</button>
-          ${ui.confirmReset
-            ? `<div class="small">Reset every demo change?</div><div class="row"><button class="btn small danger" data-action="reset-yes">Yes, reset</button><button class="btn small ghost" data-action="reset-no">Cancel</button></div>`
-            : `<button class="btn small ghost block" data-action="reset">Reset demo</button>`}
-        </div>
-      </div>`;
+      <nav class="nav" aria-label="Main">${nav.filter(([r]) => allowed(r)).map(link).join('')}<div class="nav-group label">Insights</div>${insights.map(link).join('')}</nav>
+      `;
   }
 
   // ---------------------------------------------------------------- home
@@ -223,7 +219,6 @@
       ['amy-item', 'Amy requests a new reagent pack. The licence field appears and Quality/Regulatory joins the route automatically.', 'Start as Amy'],
       ['marcus-dup', 'Marcus starts a customer called "Natl Univ Hosp". The form shows it already exists, before any approver sees it.', 'Start as Marcus'],
       ['weijie', 'Wei Jie approves from a Teams-style card. Bank details stay masked until he chooses to see them, and that view is logged.', 'Open as Wei Jie'],
-      ['clock', 'Move the clock to the next working day. Overdue approvals get a reminder, then an escalation.', 'Next working day'],
       ['priya-bu', 'Priya adds Marcus\'s new business unit in Settings. No IT ticket, and his requests route to his own head.', 'Open Settings as Priya'],
       ['priya-desk', 'Priya passes the final check and exports the SAP Business One import file.', 'Open MDM desk as Priya'],
       ['regional', 'Growth by country and product, the forecast, and what changes once duplicate customers are merged.', 'Open regional view'],
@@ -235,7 +230,7 @@
       ['marcus', 'His new team\'s requests went to the wrong people and sat for two weeks.', 'His business unit is added in Settings in a minute and requests route to his head.'],
     ];
     return `
-      <div class="page-head"><div><span class="label">Lives Group · master data</span><h1>Requests in days, not weeks</h1>
+      <div class="page-head"><div><span class="label">Lives Group · master data</span><h1>Master Data Dashboard</h1>
         <p>One request form that stops incomplete and duplicate requests, parallel approvals in Teams and Outlook, a live status page and an import file for SAP Business One. The same clean records feed the regional sales view.</p></div>
         <div class="row"><button class="btn primary" data-action="go" data-route="request">Start a request</button><button class="btn" data-action="go" data-route="regional">Regional view</button></div></div>
       <section class="panel"><div class="hero-compare">
@@ -247,7 +242,7 @@
         ${tile('Open requests', num(open.length), `${state.requests.filter((r) => r.status === 'Needs info').length} waiting on requestors`)}
         ${tile('Approvals past target', num(overdue.length), `Target: ${state.config.settings.slaDays} working days`, overdue.length ? 'critical' : '')}
         ${tile('Duplicates stopped at the form', num(state.stats.duplicatesStopped), 'Before any approver saw them')}
-        ${tile('Average age of open requests', `${num1(avgAge)} days`, 'Working days, simulated clock')}
+        ${tile('Average age of open requests', `${num1(avgAge)} days`, 'Working days')}
       </div>
       <section class="panel"><div class="panel-head"><div><h2>How a request flows</h2><p>Every step reads its fields, rules and approvers from Settings, so the MDM team changes the process without IT.</p></div></div>
         <div class="flow">
@@ -258,8 +253,7 @@
           <div class="flow-step"><strong>Regional view</strong><span class="small">Orders by country and product, growth, forecast and sales actions.</span><span class="who">Sales and management</span></div>
         </div></section>
       <div class="grid sidebar">
-        <section class="panel"><div class="panel-head"><div><h2>Try the demo</h2><p>Each step switches to the right person. Your changes stay in this browser until you reset.</p></div></div>
-          <ol class="steps-list">${steps.map(([k, text, btn]) => `<li><span>${esc(text)}</span><button class="btn small ${k === 'amy-item' ? 'primary' : ''}" data-action="demo" data-step="${k}">${esc(btn)}</button></li>`).join('')}</ol></section>
+        <section class="panel"><div class="panel-head"><h2>Your workspace</h2></div><p>Track requests, review assigned approvals and explore regional performance from the navigation. Your account determines which workflow tools are available.</p></section>
         <section class="panel"><div class="panel-head"><div><h2>For the people in the brief</h2></div></div>
           <div class="stack">${personas.map(([id, before, after]) => `<div class="stack tight"><div class="row">${avatar(id)}<strong>${esc(pname(id))}</strong><span class="muted small">${esc(person(id).title)}</span></div><div class="ba"><div class="before"><b>Before.</b> ${esc(before)}</div><div class="after"><b>Now.</b> ${esc(after)}</div></div></div>`).join('')}</div></section>
       </div>
@@ -652,7 +646,7 @@
           <td>${statusPill(r.status)}</td><td>${tracker(r)}</td><td class="small">${esc(waitingOn(r)) || '<span class="muted">–</span>'}${r.approvals.some((a) => a.status === 'Pending' && a.reminders) ? ' <span class="pill serious">reminded</span>' : ''}</td>
           <td class="num small">${esc(num1(E.workingDaysBetween(r.createdAt, r.completedAt || state.now)))} d</td></tr>`).join('') || '<tr><td colspan="5"><div class="empty">No requests match.</div></td></tr>'}
       </tbody></table></div>
-      <p class="footnote">Age is in working days on the simulated clock. Completed requests show their total time from submission to SAP B1.</p>`;
+      <p class="footnote">Age is in working days from submission. Completed requests show their total time from submission to SAP B1.</p>`;
   };
 
   function renderDrawer(id) {
@@ -970,30 +964,30 @@
   Object.assign(App.actions, {
     go(el, e) { if (e) e.preventDefault(); go(el.dataset.route); },
     menu() { ui.menuOpen = !ui.menuOpen; render(); },
-    advance() {
-      const events = E.advanceClock(state, 1);
-      save(); render();
-      const rem = events.filter((x) => x.type === 'reminder').length, escn = events.filter((x) => x.type === 'escalation').length;
-      toast(`Now ${fmtDT(state.now)}. ${rem || escn ? `${rem} reminder${rem === 1 ? '' : 's'} and ${escn} escalation${escn === 1 ? '' : 's'} sent.` : 'Nothing overdue.'}`);
+    async logout() {
+      if (App.loggingOut) return;
+      App.loggingOut = true;
+      const buttons = document.querySelectorAll('[data-action="logout"]');
+      buttons.forEach(button => { button.disabled = true; button.textContent = 'Logging out…'; });
+      try {
+        const response = await fetch('/api/logout', {method: 'POST'});
+        if (!response.ok) throw new Error('Logout failed');
+        window.HUB_USER = null;
+        location.replace('/login.html');
+      } catch {
+        toast('Unable to log out. Check your connection and try again.');
+        App.loggingOut = false;
+        buttons.forEach(button => { button.disabled = false; button.textContent = 'Log out'; });
+      }
     },
     reset() { ui.confirmReset = true; render(); },
     'reset-no'() { ui.confirmReset = false; render(); },
     'reset-yes'() {
       state = E.seedState(H);
       ui.confirmReset = false; ui.draft = null; ui.lastSubmitted = null; ui.drawer = null; ui.revealed = {};
-      save(); render(); toast('Demo reset to Thursday 1 October 2026, 09:00.');
+      save(); render(); toast('Demo data reset.');
     },
-    demo(el) {
-      const k = el.dataset.step;
-      const as = (id) => { ui.persona = id; ui.draft = null; };
-      if (k === 'amy-item') { as('amy'); ui.draft = freshDraft('item'); go('request'); toast('You are Amy. Choose IVD reagent as the category and watch the form and the route change.'); }
-      if (k === 'marcus-dup') { as('marcus'); ui.draft = freshDraft('customer'); ui.draft.data.legal_name = 'Natl Univ Hosp'; go('request'); toast('You are Marcus. The form has already found the existing record.'); }
-      if (k === 'weijie') { as('weijie'); ui.approvalsTab = 'mine'; go('approvals'); }
-      if (k === 'clock') App.actions.advance();
-      if (k === 'priya-bu') { as('priya'); ui.adminTab = 'bu'; go('admin'); }
-      if (k === 'priya-desk') { as('priya'); ui.deskTab = 'check'; go('desk'); }
-      if (k === 'regional') go('regional');
-    },
+
   });
 
   // ---------------------------------------------------------------- events
@@ -1009,12 +1003,6 @@
   }
   function onChange(e) {
     const el = e.target;
-    if (el.id === 'persona-select') {
-      ui.persona = el.value; ui.draft = null; ui.lastSubmitted = null; ui.approvalsTab = 'mine';
-      save(); render();
-      toast(`Viewing as ${pname(ui.persona)}, ${person(ui.persona).title}.`);
-      return;
-    }
     if (el.dataset.action && el.type === 'checkbox' && App.actions[el.dataset.action]) { App.actions[el.dataset.action](el, e); return; }
     if (el.id === 'f-bu') { draft().bu = el.value; save(); refreshRequestSide(); render(); return; }
     if (el.id === 'f-clone') {
@@ -1073,6 +1061,5 @@
     if (['regional', 'case'].includes(ui.route)) render();
   }
   App.start = start;
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => App.start());
-  else setTimeout(() => App.start(), 0);
+  // The authenticated loader starts the app after all view modules are ready.
 })();

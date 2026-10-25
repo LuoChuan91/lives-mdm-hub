@@ -1,0 +1,14 @@
+[
+  {
+    "username": "testuser",
+    "role": "requester",
+    "salt": "4b79309c3e49696793ea9536441f894a",
+    "password_hash": "84a35c034edc04c413e74868b14b7067f1a7b079322199d9e887c008f74f0cd4"
+  },
+  {
+    "username": "randall",
+    "role": "requester",
+    "salt": "82129542c0e15173f1eb96a89e48bb9d",
+    "password_hash": "4fa0e3220c8e9ebbc186dccb69aafc54cc2dd5673839bd68d4dfe1bd35d68760"
+  }
+]
