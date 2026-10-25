@@ -18,6 +18,7 @@ document.querySelectorAll('[data-mode]').forEach(button => button.addEventListen
 form.addEventListener('submit', async event => {
   event.preventDefault(); submit.disabled = true; error.hidden = true;
   try {
+    if (location.protocol === 'file:') throw new Error('Open http://localhost:8000/login.html instead of opening the HTML file directly.');
     const response = await fetch(`/api/${mode}`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(Object.fromEntries(new FormData(form)))});
     const body = await response.text();
     let result;
@@ -28,6 +29,11 @@ form.addEventListener('submit', async event => {
     if (!response.ok) throw new Error(result?.error || `Sign in failed (HTTP ${response.status}). Please try again.`);
     if (!result?.username || !result?.role) throw new Error('Invalid login response. Restart python3 server.py and open http://localhost:8000/login.html.');
     location.href = '/';
-  } catch (e) { error.textContent = e.message || 'Unable to connect to the Python server.'; error.hidden = false; }
+  } catch (e) {
+    error.textContent = e instanceof TypeError
+      ? 'Cannot reach the login server. Keep python3 server.py running and open http://localhost:8000/login.html, then try again.'
+      : e.message || 'Unable to connect to the Python server.';
+    error.hidden = false;
+  }
   finally { submit.disabled = false; }
 });
