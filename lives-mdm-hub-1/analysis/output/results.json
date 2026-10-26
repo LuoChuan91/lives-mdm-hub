@@ -495,5 +495,50 @@
         }
       }
     }
-  ]
+  ],
+  "propensity": {
+    "train_rows": 882,
+    "test_rows": 315,
+    "base_rate": 0.641,
+    "auc": 0.976,
+    "auc_boosted": 0.978,
+    "auc_rule": 0.973,
+    "brier": 0.019,
+    "brier_rule": 0.019,
+    "calibration": [
+      {
+        "band": "0-20%",
+        "predicted": 1.0,
+        "actual": 0.968
+      },
+      {
+        "band": "20-40%",
+        "predicted": 1.0,
+        "actual": 0.984
+      },
+      {
+        "band": "40-60%",
+        "predicted": 0.997,
+        "actual": 0.984
+      },
+      {
+        "band": "60-80%",
+        "predicted": 0.311,
+        "actual": 0.27
+      },
+      {
+        "band": "80-100%",
+        "predicted": 0.001,
+        "actual": 0.0
+      }
+    ],
+    "lapsed_found": {
+      "total": 6,
+      "flagged": 0
+    },
+    "new_buyers": {
+      "total": 0,
+      "in_top_fifth": 0
+    }
+  }
 }

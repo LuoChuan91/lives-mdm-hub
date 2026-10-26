@@ -10,5 +10,53 @@
     "role": "requester",
     "salt": "82129542c0e15173f1eb96a89e48bb9d",
     "password_hash": "4fa0e3220c8e9ebbc186dccb69aafc54cc2dd5673839bd68d4dfe1bd35d68760"
+  },
+  {
+    "username": "amy",
+    "role": "requester",
+    "salt": "60d5a8f8a5a94a7afa412e1ce842760f",
+    "password_hash": "d3fb6a124bb9df65fc5bce800ca17c4f4e07643cb6df48b95808e4321d8a0b9f"
+  },
+  {
+    "username": "marcus",
+    "role": "requester_new",
+    "salt": "6a902bd7c1615bc31c117dc089809b07",
+    "password_hash": "2ff79c0512b1ee8920b671632b8534e557456b01c8708e4cc63bc6eb4a701bff"
+  },
+  {
+    "username": "weijie",
+    "role": "finance",
+    "salt": "f1a7f4d7b6a850bb7e1ba08dd0e26a0e",
+    "password_hash": "0bb22958c4a2911cde06a58f78073f1d1962544d67e2f0601375c9c9a31ff3c1"
+  },
+  {
+    "username": "siti",
+    "role": "quality",
+    "salt": "de93445d10573c30f6f1f1ad0ddf1f82",
+    "password_hash": "d697298de741d3bb42b424486bbf926b0760cab167fcffdad49d7578f84a5915"
+  },
+  {
+    "username": "daniel",
+    "role": "bu_head",
+    "salt": "8fc8815869fcf08080f33df8c7e32ae9",
+    "password_hash": "f90fe5ad95d520e0e713e8eebd7a42a793d4e488f2ca5a291f9ae0d2e9906066"
+  },
+  {
+    "username": "grace",
+    "role": "business_support",
+    "salt": "43d299cc0c75599db590a9f2d9cf46c7",
+    "password_hash": "c7554ad3d09a4a38eae85ffde1a2cf261759f7880b62309c6e2833027a55e00b"
+  },
+  {
+    "username": "hafiz",
+    "role": "procurement",
+    "salt": "3e9500bd428e1b144ab7c8db78487657",
+    "password_hash": "af717126b1bd6894668332cd4f55ec50335674005eb67eac8eae9a778d3cd49e"
+  },
+  {
+    "username": "priya",
+    "role": "mdm",
+    "salt": "c08019e0fb567ac44e5ab1cc54544ede",
+    "password_hash": "b11dcbad29416d9525b6dd9e1d86c5026d3446f5f6f6ff4283be136d085903c4"
   }
 ]

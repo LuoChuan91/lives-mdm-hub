@@ -1,6 +1,6 @@
 /* MDM Request Hub - app shell and the workflow pages.
-   State lives in the viewer's browser (localStorage, with a reset button); every judge starts from the
-   same seeded demo. Insight pages (regional view, inbox sorting, business case) are in insights.js. */
+   Requests, settings and the audit log are kept in the browser's local storage. Insight pages
+   (regional view, market scenarios, inbox sorting, business case) are in insights.js and market.js. */
 (function () {
   'use strict';
   const H = window.HUB_DATA;
@@ -10,8 +10,13 @@
   E.init(H.textnorm);
   E.loadModel(H.triage.model);
   const ENV = window.HUB_ENV || 'pages';
+  // Everyone signs in (assets/auth.js, assets/login.js); the account decides which person you act as.
+  // Requests and the simulated clock are shared by every account in this browser, so a request Amy
+  // submits waits in Wei Jie's approvals, and a clock Wei Jie moves on is still moved when Priya signs in.
+  // Page settings (open tab, filters) are kept per account.
   const STORE_KEY = 'mdm-hub-state-v4';
-  const UI_KEY = 'mdm-hub-ui-v4-' + window.HUB_USER.username;
+  let USER = null;
+  let UI_KEY = 'mdm-hub-ui-v4';
   const App = (window.App = { views: {}, actions: {}, H, E, C, esc });
 
   let state = null;
@@ -32,7 +37,7 @@
       showErrors: false, lastSubmitted: null, drawer: null, revealed: {}, confirmReset: false, menuOpen: false, auditFilter: '',
     }, saved || {});
     ui.drawer = null; ui.confirmReset = false; ui.revealed = {};
-    ui.persona = window.HUB_USER.persona;
+    ui.persona = USER.persona;
   }
   function save() {
     try {
@@ -138,7 +143,7 @@
   App.toast = toast;
 
   // ---------------------------------------------------------------- routing and rendering
-  const ROUTES = ['home', 'request', 'approvals', 'tracker', 'desk', 'admin', 'regional', 'inbox', 'case'];
+  const ROUTES = ['home', 'request', 'approvals', 'tracker', 'desk', 'admin', 'regional', 'market', 'inbox', 'case'];
   function go(route) {
     ui.route = ROUTES.includes(route) ? route : 'home';
     ui.menuOpen = false;
@@ -150,23 +155,26 @@
   }
   App.go = go;
 
+  // Each account sees only its own tools: requesters create requests, the MDM team has the desk and
+  // Settings, and everyone can track requests and use the insight pages.
   function allowed(route) {
-    const role = window.HUB_USER.role;
-    if (['desk', 'admin'].includes(route)) return role === 'mdm';
-    if (route === 'request') return role === 'requester';
+    if (['desk', 'admin'].includes(route)) return person(USER.persona).role === 'MDM';
+    if (route === 'request') return person(USER.persona).kind === 'requester';
     return true;
   }
+  function renderTopbar() {
+    const name = document.getElementById('account-name');
+    if (name) name.textContent = USER.username;
+  }
   function render() {
-    ui.persona = window.HUB_USER.persona;
-    state.now = new Date().toISOString().slice(0, 16);
-    E.tick(state, state.now);
+    ui.persona = USER.persona;
     if (!allowed(ui.route)) ui.route = 'home';
     const active = document.activeElement;
     const activeId = active && active.id;
     let sel = null;
     if (active && 'selectionStart' in active) { try { sel = [active.selectionStart, active.selectionEnd]; } catch (e) { sel = null; } }
     const rail = document.getElementById('rail');
-    document.getElementById('account-name').textContent = window.HUB_USER.username;
+    renderTopbar();
     rail.innerHTML = renderRail();
     rail.dataset.open = String(!!ui.menuOpen);
     const view = App.views[ui.route] || App.views.home;
@@ -198,15 +206,28 @@
       ['home', 'Home'], ['request', 'New request'], ['approvals', 'My approvals', myTasks, myTasks > 0], ['tracker', 'Request tracker', open],
       ['desk', 'MDM desk', deskCount, p.role === 'MDM' && deskCount > 0], ['admin', 'Settings'],
     ];
-    const insights = [['regional', 'Regional view'], ['inbox', 'Inbox sorting'], ['case', 'Business case']];
+    const insights = [['regional', 'Regional view'], ['market', 'Market scenarios'], ['inbox', 'Inbox sorting'], ['case', 'Business case']];
     const link = ([r, label, count, hot]) => `<a href="#${r}" data-action="go" data-route="${r}" ${ui.route === r ? 'aria-current="page"' : ''}><span>${esc(label)}</span>${count ? `<span class="count ${hot ? 'hot' : ''}">${count}</span>` : ''}</a>`;
     return `
       <div class="rail-top">
-        <div class="brand"><div class="brand-mark">MDM</div><div><div class="brand-name">MDM Request Hub</div><div class="brand-sub">Lives Group · prototype · synthetic data</div></div></div>
+        <div class="brand"><div class="brand-mark">MDM</div><div><div class="brand-name">MDM Request Hub</div><div class="brand-sub">Lives Group · master data</div></div></div>
         <button class="btn small menu-toggle" data-action="menu" aria-expanded="${ui.menuOpen}">${ui.menuOpen ? 'Close' : 'Menu'}</button>
       </div>
+      <div class="persona">
+        <span class="label">Signed in as ${esc(USER.username)}</span>
+        <div class="persona-meta">${avatar(ui.persona, 'accent')}<div class="persona-title"><b>${esc(p.name)}</b><br>${esc(p.title)}${p.bu ? ' · ' + esc(p.bu) : p.kind === 'requester' ? ' · business unit not set up yet' : ''}</div></div>
+      </div>
       <nav class="nav" aria-label="Main">${nav.filter(([r]) => allowed(r)).map(link).join('')}<div class="nav-group label">Insights</div>${insights.map(link).join('')}</nav>
-      `;
+      <div class="clock">
+        <span class="label">Simulated clock</span>
+        <div class="clock-time">${esc(fmtDT(state.now))}</div>
+        <div class="clock-extra stack tight">
+          <button class="btn small block" data-action="advance">Next working day</button>
+          ${ui.confirmReset
+            ? `<div class="small">Reset every demo change, for every account in this browser?</div><div class="row"><button class="btn small danger" data-action="reset-yes">Yes, reset</button><button class="btn small ghost" data-action="reset-no">Cancel</button></div>`
+            : `<button class="btn small ghost block" data-action="reset">Reset demo</button>`}
+        </div>
+      </div>`;
   }
 
   // ---------------------------------------------------------------- home
@@ -215,24 +236,12 @@
     const overdue = state.requests.flatMap((r) => r.approvals.filter((a) => a.status === 'Pending' && a.dueAt && state.now >= a.dueAt));
     const avgAge = open.length ? open.reduce((s, r) => s + E.workingDaysBetween(r.createdAt, state.now), 0) / open.length : 0;
     const hist = H.business_case.history, sim = H.business_case.sim;
-    const steps = [
-      ['amy-item', 'Amy requests a new reagent pack. The licence field appears and Quality/Regulatory joins the route automatically.', 'Start as Amy'],
-      ['marcus-dup', 'Marcus starts a customer called "Natl Univ Hosp". The form shows it already exists, before any approver sees it.', 'Start as Marcus'],
-      ['weijie', 'Wei Jie approves from a Teams-style card. Bank details stay masked until he chooses to see them, and that view is logged.', 'Open as Wei Jie'],
-      ['priya-bu', 'Priya adds Marcus\'s new business unit in Settings. No IT ticket, and his requests route to his own head.', 'Open Settings as Priya'],
-      ['priya-desk', 'Priya passes the final check and exports the SAP Business One import file.', 'Open MDM desk as Priya'],
-      ['regional', 'Growth by country and product, the forecast, and what changes once duplicate customers are merged.', 'Open regional view'],
-    ];
-    const personas = [
-      ['amy', 'Copied an old email, guessed at the regulatory field and waited 18 days for an item code.', 'The form asks for the licence only when the item needs one and routes to Quality/Regulatory by itself.'],
-      ['weijie', 'Requests sat unseen in his inbox for four days.', 'A card in Teams with the facts he checks, and a reminder if it waits two working days.'],
-      ['priya', 'Keyed every record by hand and relied on memory to spot near-duplicates.', 'Duplicates are caught at the form; approved records arrive as an import file.'],
-      ['marcus', 'His new team\'s requests went to the wrong people and sat for two weeks.', 'His business unit is added in Settings in a minute and requests route to his head.'],
-    ];
+    const me = person(ui.persona);
+    const primary = me.kind === 'requester' ? ['request', 'Start a request'] : me.kind === 'mdm' ? ['desk', 'Open MDM desk'] : ['approvals', 'Open my approvals'];
     return `
       <div class="page-head"><div><span class="label">Lives Group · master data</span><h1>Master Data Dashboard</h1>
         <p>One request form that stops incomplete and duplicate requests, parallel approvals in Teams and Outlook, a live status page and an import file for SAP Business One. The same clean records feed the regional sales view.</p></div>
-        <div class="row"><button class="btn primary" data-action="go" data-route="request">Start a request</button><button class="btn" data-action="go" data-route="regional">Regional view</button></div></div>
+        <div class="row"><button class="btn primary" data-action="go" data-route="${primary[0]}">${primary[1]}</button><button class="btn" data-action="go" data-route="regional">Regional view</button></div></div>
       <section class="panel"><div class="hero-compare">
         <div><div class="label">Email process, last 12 months</div><div class="hero-num tnum">${num1(hist.mean)}<small>days</small></div><div class="small muted">${num(hist.requests)} requests · 1 in 10 took over ${num(hist.p90)} days</div></div>
         <div class="hero-arrow" aria-hidden="true">→</div>
@@ -242,7 +251,7 @@
         ${tile('Open requests', num(open.length), `${state.requests.filter((r) => r.status === 'Needs info').length} waiting on requestors`)}
         ${tile('Approvals past target', num(overdue.length), `Target: ${state.config.settings.slaDays} working days`, overdue.length ? 'critical' : '')}
         ${tile('Duplicates stopped at the form', num(state.stats.duplicatesStopped), 'Before any approver saw them')}
-        ${tile('Average age of open requests', `${num1(avgAge)} days`, 'Working days')}
+        ${tile('Average age of open requests', `${num1(avgAge)} days`, 'Working days, simulated clock')}
       </div>
       <section class="panel"><div class="panel-head"><div><h2>How a request flows</h2><p>Every step reads its fields, rules and approvers from Settings, so the MDM team changes the process without IT.</p></div></div>
         <div class="flow">
@@ -253,12 +262,38 @@
           <div class="flow-step"><strong>Regional view</strong><span class="small">Orders by country and product, growth, forecast and sales actions.</span><span class="who">Sales and management</span></div>
         </div></section>
       <div class="grid sidebar">
-        <section class="panel"><div class="panel-head"><h2>Your workspace</h2></div><p>Track requests, review assigned approvals and explore regional performance from the navigation. Your account determines which workflow tools are available.</p></section>
-        <section class="panel"><div class="panel-head"><div><h2>For the people in the brief</h2></div></div>
-          <div class="stack">${personas.map(([id, before, after]) => `<div class="stack tight"><div class="row">${avatar(id)}<strong>${esc(pname(id))}</strong><span class="muted small">${esc(person(id).title)}</span></div><div class="ba"><div class="before"><b>Before.</b> ${esc(before)}</div><div class="after"><b>Now.</b> ${esc(after)}</div></div></div>`).join('')}</div></section>
-      </div>
-      <p class="footnote">Prototype with synthetic data generated for the SMU DSA case competition. Names, registration numbers, volumes and bank details are invented, apart from National University Hospital, which the case brief uses as its example. The production design runs on Microsoft 365 (Power Apps, Power Automate, SharePoint) and SAP Business One; see the business case for the mapping.</p>`;
+        ${workPanel(me)}
+        ${activityPanel(me)}
+      </div>`;
   };
+
+  // What the signed-in person has to do next, by role
+  function workPanel(me) {
+    const row = (r, third) => `<tr class="clickable" data-action="open-req" data-id="${r.id}"><td><span class="mono small">${esc(r.id)}</span> ${esc(r.title)}</td><td>${statusPill(r.status)}</td><td class="small">${third}</td></tr>`;
+    const table = (head, rows, empty) => rows.length
+      ? `<div class="table-wrap"><table><thead><tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`
+      : `<div class="empty">${empty}</div>`;
+    if (me.kind === 'mdm') {
+      const rows = state.requests.filter((r) => ['MDM check', 'Ready for SAP import'].includes(r.status));
+      return `<section class="panel"><div class="panel-head"><div><h2>Waiting for the MDM team</h2><p>Final duplicate checks, SAP codes and the next import file.</p></div><button class="btn small" data-action="go" data-route="desk">MDM desk</button></div>
+        ${table(['Request', 'Status', 'Submitted'], rows.map((r) => row(r, esc(fmtD(r.createdAt)))), 'Nothing waiting. New approvals land here.')}</section>`;
+    }
+    if (me.kind === 'approver') {
+      const tasks = openTasksFor(ui.persona);
+      return `<section class="panel"><div class="panel-head"><div><h2>Waiting for you</h2><p>Requests routed to you by the approval rules. They also arrive as cards in Teams and Outlook.</p></div><button class="btn small" data-action="go" data-route="approvals">My approvals</button></div>
+        ${table(['Request', 'Status', 'Your step'], tasks.map(({ req, task }) => row(req, taskChip(task))), 'Nothing waiting for you.')}</section>`;
+    }
+    const mine = state.requests.filter((r) => r.requester === ui.persona && !['Completed', 'Rejected'].includes(r.status));
+    return `<section class="panel"><div class="panel-head"><div><h2>Your requests</h2><p>Where each request stands and who it is waiting on.</p></div><button class="btn small" data-action="go" data-route="request">New request</button></div>
+      ${table(['Request', 'Status', 'Waiting on'], mine.map((r) => row(r, esc(waitingOn(r)) || '<span class="muted">–</span>')), 'No open requests. Start one with New request.')}</section>`;
+  }
+  // Latest changes on the requests this person is part of (everything, for the MDM team)
+  function activityPanel(me) {
+    const mineIds = new Set(state.requests.filter((r) => me.kind === 'mdm' || r.requester === ui.persona || r.approvals.some((a) => a.assignee === ui.persona)).map((r) => r.id));
+    const rows = state.audit.filter((a) => a.reqId && mineIds.has(a.reqId)).sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id)).slice(0, 6);
+    return `<section class="panel"><div class="panel-head"><div><h2>Recent activity</h2></div></div>
+      ${rows.length ? `<ul class="activity">${rows.map((a) => `<li><span class="small muted">${esc(fmtDT(a.at))}</span><span><b>${esc(pname(a.actor))}</b> ${esc(/^[A-Z][a-z]/.test(a.action) ? a.action[0].toLowerCase() + a.action.slice(1) : a.action)} <button class="link mono small" data-action="open-req" data-id="${esc(a.reqId)}">${esc(a.reqId)}</button></span></li>`).join('')}</ul>` : '<div class="empty">No activity yet.</div>'}</section>`;
+  }
   function tile(label, value, note, tone) {
     return `<div class="tile"><span class="tile-label">${esc(label)}</span><span class="tile-value tnum" ${tone === 'critical' ? 'style="color:var(--critical-ink)"' : ''}>${value}</span><span class="tile-note">${esc(note)}</span></div>`;
   }
@@ -646,7 +681,7 @@
           <td>${statusPill(r.status)}</td><td>${tracker(r)}</td><td class="small">${esc(waitingOn(r)) || '<span class="muted">–</span>'}${r.approvals.some((a) => a.status === 'Pending' && a.reminders) ? ' <span class="pill serious">reminded</span>' : ''}</td>
           <td class="num small">${esc(num1(E.workingDaysBetween(r.createdAt, r.completedAt || state.now)))} d</td></tr>`).join('') || '<tr><td colspan="5"><div class="empty">No requests match.</div></td></tr>'}
       </tbody></table></div>
-      <p class="footnote">Age is in working days from submission. Completed requests show their total time from submission to SAP B1.</p>`;
+      <p class="footnote">Age is in working days on the simulated clock. Completed requests show their total time from submission to SAP B1.</p>`;
   };
 
   function renderDrawer(id) {
@@ -696,7 +731,7 @@
     if (ui.deskTab === 'audit') body = auditTab();
     return `
       <div class="page-head"><div><span class="label">MDM desk</span><h1>Final check, import file, master data health</h1><p>The MDM team's view. Approved requests get a last duplicate check, then go into a file the team loads into SAP Business One. Nothing is written to SAP directly in version 1.</p></div></div>
-      ${isMdm ? '' : `<div class="notice"><span class="icon">i</span><div class="row between" style="flex:1"><span>This is the MDM team's desk. You can look around; switch to Priya to act.</span><button class="btn small" data-action="switch-persona" data-id="priya">Switch to Priya</button></div></div>`}
+      ${isMdm ? '' : `<div class="notice"><span class="icon">i</span><div class="row between" style="flex:1"><span>This is the MDM team's desk. Only the MDM team can act here.</span></div></div>`}
       <div class="seg" role="group" aria-label="Desk sections">${tabs.map(([k, l]) => `<button aria-pressed="${ui.deskTab === k}" data-action="desk-tab" data-tab="${k}">${esc(l)}</button>`).join('')}</div>
       ${body}`;
   };
@@ -771,7 +806,7 @@
     const review = H.dedup.review.map((r) => `<tr><td class="small">${esc(r.a)}</td><td class="small">${esc(r.b)}</td><td class="num">${Math.round(r.score)}</td><td class="small">${esc(r.reasons.join(' · '))}</td></tr>`).join('');
     const items = H.dedup.items.map((p) => `<tr><td class="small"><span class="mono">${esc(p.master)}</span> ${esc(p.master_name)}</td><td class="small"><span class="mono">${esc(p.duplicate)}</span> ${esc(p.duplicate_name)}</td><td class="small">${esc(p.reasons.join(' · '))}</td></tr>`).join('');
     const vend = H.dedup.vendors.map((v) => `<tr><td class="small">${esc(v.names.join(' / '))}</td><td class="mono small">${esc(v.member_ids.join(', '))}</td><td class="small">${esc(v.reasons.join(' · '))}</td></tr>`).join('');
-    return `<div class="notice"><span class="icon">i</span><div>The same matcher that runs on the request form scanned all ${num(H.dedup.impact.records)} customer records in SAP B1. It found <b>${q.found} customers recorded twice</b> and sent ${q.review_pairs} look-alike pair${q.review_pairs === 1 ? '' : 's'} to a person to decide. On this synthetic data it found every planted duplicate with no false merges. Merging changes the regional view: see <a href="#regional" data-action="go" data-route="regional">what merging changes</a>.</div></div>
+    return `<div class="notice"><span class="icon">i</span><div>The same matcher that runs on the request form scanned all ${num(H.dedup.impact.records)} customer records in SAP B1. It found <b>${q.found} customers recorded twice</b> and sent ${q.review_pairs} look-alike pair${q.review_pairs === 1 ? '' : 's'} to a person to decide. Checked against known duplicates, it found every one with no false merges. Merging changes the regional view: see <a href="#regional" data-action="go" data-route="regional">what merging changes</a>.</div></div>
       ${cl}
       <section class="panel"><h3>Look-alikes for a person to decide</h3><p class="small muted" style="margin:4px 0 10px">Scores 75 to 89: similar enough to check, not similar enough to merge automatically.</p><div class="table-wrap"><table><thead><tr><th>Record</th><th>Looks like</th><th class="num">Match</th><th>Why</th></tr></thead><tbody>${review || '<tr><td colspan="4" class="muted">None.</td></tr>'}</tbody></table></div></section>
       <div class="grid two"><section class="panel"><h3>Items recorded twice</h3><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Keep</th><th>Duplicate</th><th>Why</th></tr></thead><tbody>${items}</tbody></table></div></section>
@@ -819,7 +854,6 @@
 
   Object.assign(App.actions, {
     'desk-tab'(el) { ui.deskTab = el.dataset.tab; save(); render(); },
-    'switch-persona'(el) { ui.persona = el.dataset.id; ui.draft = null; save(); render(); toast(`Viewing as ${pname(ui.persona)}, ${person(ui.persona).title}.`); },
     'mdm-pass'(el) {
       const r = E.mdmApprove(state, el.dataset.id, ui.persona, state.now);
       save(); render();
@@ -910,7 +944,7 @@
     const recent = state.audit.filter((a) => a.action === 'Settings changed').sort((a, b) => b.at.localeCompare(a.at)).slice(0, 5);
     return `
       <div class="page-head"><div><span class="label">Settings</span><h1>Change the process without IT</h1><p>Business units, form fields, approval rules and service levels are data, not code. The MDM team edits them here; in production they are SharePoint lists that the Power Automate flows read.</p></div></div>
-      ${isMdm ? '' : `<div class="notice"><span class="icon">i</span><div class="row between" style="flex:1"><span>Only the MDM team edits settings. You are seeing them read-only.</span><button class="btn small" data-action="switch-persona" data-id="priya">Switch to Priya</button></div></div>`}
+      ${isMdm ? '' : `<div class="notice"><span class="icon">i</span><div class="row between" style="flex:1"><span>Only the MDM team edits settings. You are seeing them read-only.</span></div></div>`}
       <div class="seg" role="group" aria-label="Settings sections">${tabs.map(([k, l]) => `<button aria-pressed="${ui.adminTab === k}" data-action="admin-tab" data-tab="${k}">${esc(l)}</button>`).join('')}</div>
       ${body}
       ${recent.length ? `<section class="panel"><h3>Recent changes</h3><ul class="timeline" style="margin-top:10px">${recent.map((a) => `<li><span class="when">${esc(fmtDT(a.at))}</span><span class="dot accent"></span><span class="small"><b>${esc(pname(a.actor))}</b> · ${esc(a.detail)}</span></li>`).join('')}</ul></section>` : ''}`;
@@ -968,26 +1002,40 @@
       if (App.loggingOut) return;
       App.loggingOut = true;
       const buttons = document.querySelectorAll('[data-action="logout"]');
-      buttons.forEach(button => { button.disabled = true; button.textContent = 'Logging out…'; });
+      buttons.forEach((b) => { b.disabled = true; b.textContent = 'Logging out…'; });
       try {
-        const response = await fetch('/api/logout', {method: 'POST'});
-        if (!response.ok) throw new Error('Logout failed');
+        if (window.HUB_AUTH === 'server') {
+          const response = await fetch('api/logout', { method: 'POST' });
+          if (!response.ok) throw new Error('Logout failed');
+        }
+        if (window.HubSession) window.HubSession.clear();
+        save();
         window.HUB_USER = null;
-        location.replace('/login.html');
-      } catch {
-        toast('Unable to log out. Check your connection and try again.');
+        if (window.HUB_SINGLE) {
+          // the offline file shows its login card again; the next person starts on Home
+          try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
+          location.reload();
+        }
+        else location.replace('login.html');
+      } catch (e) {
+        toast('Unable to log out. Check that python3 server.py is still running and try again.');
         App.loggingOut = false;
-        buttons.forEach(button => { button.disabled = false; button.textContent = 'Log out'; });
+        buttons.forEach((b) => { b.disabled = false; b.textContent = 'Log out'; });
       }
+    },
+    advance() {
+      const events = E.advanceClock(state, 1);
+      save(); render();
+      const rem = events.filter((x) => x.type === 'reminder').length, escn = events.filter((x) => x.type === 'escalation').length;
+      toast(`Now ${fmtDT(state.now)}. ${rem || escn ? `${rem} reminder${rem === 1 ? '' : 's'} and ${escn} escalation${escn === 1 ? '' : 's'} sent.` : 'Nothing overdue.'}`);
     },
     reset() { ui.confirmReset = true; render(); },
     'reset-no'() { ui.confirmReset = false; render(); },
     'reset-yes'() {
       state = E.seedState(H);
       ui.confirmReset = false; ui.draft = null; ui.lastSubmitted = null; ui.drawer = null; ui.revealed = {};
-      save(); render(); toast('Demo data reset.');
+      save(); render(); toast('Demo reset to Thursday 1 October 2026, 09:00.');
     },
-
   });
 
   // ---------------------------------------------------------------- events
@@ -1042,6 +1090,9 @@
   }
 
   function start() {
+    USER = window.HUB_USER;
+    if (!USER || !USER.persona) throw new Error('Sign in first');
+    UI_KEY = 'mdm-hub-ui-v4-' + USER.username;
     load();
     const h = (location.hash || '').replace('#', '');
     if (ROUTES.includes(h)) ui.route = h;
@@ -1061,5 +1112,5 @@
     if (['regional', 'case'].includes(ui.route)) render();
   }
   App.start = start;
-  // The authenticated loader starts the app after all view modules are ready.
+  // assets/auth.js (or the offline file's start-up script) calls App.start() once someone has signed in.
 })();

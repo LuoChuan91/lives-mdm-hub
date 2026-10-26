@@ -36,7 +36,7 @@
     const pipeMonthly = pipe.reduce((s, r) => s + r.expected_monthly, 0);
     return `
       <div class="page-head"><div><span class="label">Regional business view</span><h1>Customer purchase orders across five countries</h1>
-        <p>Products A, B and C from October 2025 to September 2026. Only customer purchase orders count as volume; enquiries and account setup requests are tracked separately further down. All figures are synthetic.</p></div>
+        <p>Products A, B and C from October 2025 to September 2026. Only customer purchase orders count as volume; enquiries and account setup requests are tracked separately further down.</p></div>
         <div class="stack tight"><span class="label">Customer records</span>${seg([['dedup', 'Duplicates merged'], ['raw', 'As in SAP B1 today']], v, 'regional-view', 'view')}</div></div>
       ${v === 'raw' ? `<div class="notice warn"><span class="icon">!</span><div>You are looking at customer records as they sit in SAP B1 today: ${imp.records} records for ${imp.customers} customers. Some customers are split across two records and one Malaysian hospital is filed under Singapore. <a href="#merge-effect" data-action="scroll" data-target="merge-effect">See what merging changes</a>.</div></div>` : ''}
       <div class="grid four">
@@ -90,7 +90,7 @@
     return `<section class="panel"><div class="panel-head"><div><h2>Trend and next-quarter forecast</h2><p>Product ${p}, ${esc(productName(p).toLowerCase())}. October to December 2026 is forecast with the combined method; the shaded band is the range the backtest says is likely.</p></div>
         <div class="row">${seg(products.map((x) => [x.code, `Product ${x.code}`]), p, 'product', 'product')}${seg([['region', 'Region total'], ['country', 'By country']], u.chartMode, 'chart-mode', 'mode')}</div></div>
       <div class="chart">${chart}</div><div class="legend" style="margin-top:8px">${legend}</div>
-      <div class="inset small" style="margin-top:12px">Next quarter: about <b>${num(next)} ${esc(unit(p))}</b> across the region, ${pct(next / q3 - 1, true)} on July to September. Today's 6-month average would plan for ${num(ma)}, ${ma < next ? 'under-ordering' : 'over-ordering'} by about ${num(Math.abs(next - ma))} ${esc(unit(p))}.</div>
+      <div class="inset small" style="margin-top:12px">Next quarter: about <b>${num(next)} ${esc(unit(p))}</b> across the region, ${pct(next / q3 - 1, true)} on July to September. Today's 6-month average would plan for ${num(ma)}, ${ma < next ? 'under-ordering' : 'over-ordering'} by about ${num(Math.abs(next - ma))} ${esc(unit(p))}. To see how a weaker currency, a new tariff or tighter hospital budgets would change this, open <a href="#market">Market scenarios</a>.</div>
       <details class="data" style="margin-top:10px"><summary>Show the numbers</summary><div class="table-wrap"><table>${rows}</table></div></details></section>`;
   }
 
@@ -234,7 +234,7 @@
         ${tile('Accuracy on unseen emails', `${(m.accuracy * 100).toFixed(1)}%`, `${num(m.test_size)} held-out messages`)}
         ${tile('Sorted without a person', `${Math.round(m.auto_share * 100)}%`, `Confidence of 80% or more; ${(m.auto_accuracy * 100).toFixed(1)}% of those correct`)}
         ${tile('Hours saved a year', num(H.business_case.impacts.triage_hours), `At ${H.business_case.assumptions.triage_minutes_saved_per_message} minutes per message sorted`)}
-        ${tile('Messages a year', num(H.business_case.impacts.messages_per_year), 'In the synthetic mailbox')}
+        ${tile('Messages a year', num(H.business_case.impacts.messages_per_year), 'Shared mailbox, last 12 months')}
       </div>
       <div class="grid sidebar">
         <section class="panel stack"><div class="panel-head" style="margin:0"><div><h2>Try it</h2><p>Paste an email or pick an example. The model runs in your browser.</p></div></div>
@@ -429,11 +429,11 @@
         <section class="panel"><h2>Deliberately not in version 1</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Left out</th><th>Why</th><th>When</th></tr></thead><tbody>
           <tr><td>Writing straight into SAP B1</td><td class="small">Risky without an IT team; the import file keeps a person checking every record</td><td class="small">Phase 3, through the Service Layer</td></tr>
           <tr><td>Bulk merge of existing duplicates</td><td class="small">Needs data owners to agree; version 1 flags them</td><td class="small">Phase 2 clean-up sprint</td></tr>
-          <tr><td>Full security model</td><td class="small">Outside the brief; version 1 masks sensitive fields by role and logs every view</td><td class="small">With an IT security review</td></tr>
+          <tr><td>Full security model</td><td class="small">Not in version 1, which masks sensitive fields by role and logs every view</td><td class="small">With an IT security review</td></tr>
           <tr><td>Forecasts per item or per customer</td><td class="small">Too sparse with 12 months of history</td><td class="small">After 24 months of clean data</td></tr>
           <tr><td>Machine-learning forecasts</td><td class="small">Too little history; simple methods are easier to trust and explain</td><td class="small">When more data exists</td></tr>
           <tr><td>A mobile app</td><td class="small">Teams and Outlook already work on phones</td><td class="small">Not planned</td></tr></tbody></table></div></section>
-        <section class="panel"><h2>How it would be built at Lives Group</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>In this prototype</th><th>In production</th><th>Built by</th></tr></thead><tbody>
+        <section class="panel"><h2>How it would be built at Lives Group</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>This build</th><th>In production</th><th>Built by</th></tr></thead><tbody>
           <tr><td>Request form</td><td class="small">Power Apps form (Microsoft Forms for simple types)</td><td class="small">MDM team and one power user</td></tr>
           <tr><td>Requests, settings, audit log</td><td class="small">SharePoint lists; Dataverse later if needed</td><td class="small">MDM team</td></tr>
           <tr><td>Routing, reminders, escalation</td><td class="small">Power Automate flows with Teams and Outlook approvals</td><td class="small">MDM team and one power user</td></tr>

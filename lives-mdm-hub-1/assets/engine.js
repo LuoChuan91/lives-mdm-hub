@@ -1025,12 +1025,75 @@
     return state;
   }
 
+  // ------------------------------------------------------------------ market scenarios
+  // Price-driven demand model layered on the combined forecast. All inputs are percentages.
+  //   fx[c]      local currency weakens against SGD by this much (negative = strengthens)
+  //   tariff[p]  import duty on product line p rises by this many points, in tariffCountries
+  //   demand[c]  demand in country c shifts by this much for reasons other than price
+  // Customers pay more when Lives Group passes a share of the move into prices (fxPass, tariffPass);
+  // the share it absorbs comes off Lives Group's SGD price instead. Orders respond through the product's
+  // price elasticity times the buyer segment's sensitivity.
+  function marketScenario(M, inputs) {
+    const A = M.assumptions;
+    const fxPass = inputs.fxPass !== undefined ? inputs.fxPass : A.fx_pass;
+    const tariffPass = inputs.tariffPass !== undefined ? inputs.tariffPass : A.tariff_pass;
+    const el = { ...A.elasticity, ...(inputs.elasticity || {}) };
+    const sens = { ...A.sensitivity, ...(inputs.sensitivity || {}) };
+    const fx = inputs.fx || {}, demand = inputs.demand || {}, tariff = inputs.tariff || {};
+    const tc = new Set(inputs.tariffCountries || []);
+    const shock = (c, p) => {
+      const d = (fx[c] || 0) / 100;
+      const t = tc.has(c) ? (tariff[p] || 0) / 100 : 0;
+      return {
+        customerPrice: fxPass * d + tariffPass * t,                 // change in what the customer pays, local terms
+        netPrice: -(1 - fxPass) * d - (1 - tariffPass) * t,         // change in Lives Group's SGD price per unit
+        demand: (demand[c] || 0) / 100,
+      };
+    };
+    const unitChange = (c, p, segment) => {
+      const s = shock(c, p);
+      return el[p] * s.customerPrice * (sens[segment] !== undefined ? sens[segment] : 1) + s.demand;
+    };
+    const cells = M.cells.map((m) => {
+      const s = shock(m.country, m.product);
+      const shares = Object.entries(m.segment_share || {});
+      const mix = shares.length ? shares.reduce((a, [seg, w]) => a + w * (sens[seg] !== undefined ? sens[seg] : 1), 0) : 1;
+      const du = Math.max(-1, el[m.product] * s.customerPrice * mix + s.demand);
+      const units = m.q4_units * (1 + du);
+      const baseRev = m.q4_units * m.price;
+      const rev = units * m.price * (1 + s.netPrice);
+      return { country: m.country, product: m.product, baseUnits: m.q4_units, units, unitChange: du, customerPrice: s.customerPrice,
+        netPrice: s.netPrice, baseRev, rev, revChange: rev - baseRev };
+    });
+    const sum = (arr, k) => arr.reduce((a, x) => a + x[k], 0);
+    const byCountry = {}, byProduct = {};
+    for (const x of cells) {
+      byCountry[x.country] = byCountry[x.country] || { baseRev: 0, rev: 0 };
+      byCountry[x.country].baseRev += x.baseRev; byCountry[x.country].rev += x.rev;
+      byProduct[x.product] = byProduct[x.product] || { baseUnits: 0, units: 0, baseRev: 0, rev: 0 };
+      for (const k of ['baseUnits', 'units', 'baseRev', 'rev']) byProduct[x.product][k] += x[k];
+    }
+    const customers = M.customers.map((cu) => {
+      let base = 0, scen = 0;
+      for (const [p, v] of Object.entries(cu.q4_value)) {
+        if (!v) continue;
+        const s = shock(cu.country, p);
+        const du = Math.max(-1, unitChange(cu.country, p, cu.segment));
+        base += v;
+        scen += v * (1 + du) * (1 + s.netPrice);
+      }
+      return { id: cu.id, name: cu.name, country: cu.country, segment: cu.segment, base, scen, change: scen - base };
+    });
+    return { cells, byCountry, byProduct, customers, totals: { baseRev: sum(cells, 'baseRev'), rev: sum(cells, 'rev') } };
+  }
+
   const Engine = {
     init, fold, ratio, lcsLen, nameTokens, nameScore, scoreParty, itemTokens, scoreItem, scoreCostCentre, band, findMatches, queryFromForm,
     toDate, toIso, addWorkingDays, nextWorkingMorning, workingDaysBetween, daysBetween,
     defaultConfig, evalCond, describeCond, visibleFields, validate, route, personById, buByCode, roleLabel, assigneeFor, domainLabel,
     createRequest, decide, provideInfo, mdmApprove, mdmReturn, markImported, tick, advanceClock, canSeeSensitive, maskValue, revealField,
     changeSettings, buildImportCsv, IMPORT_LAYOUT, simulateTurnaround, histogram, loadModel, classify, tokenize, extractFields, seedState, log,
+    marketScenario,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = Engine;
   else root.Engine = Engine;

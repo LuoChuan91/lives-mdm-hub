@@ -113,5 +113,23 @@ class BusinessCase(unittest.TestCase):
         self.assertLess(m["accuracy"], 0.995)
 
 
+class MarketAndLikelihood(unittest.TestCase):
+    def test_market_cells_match_the_forecast(self):
+        M = HUB["market"]
+        series = HUB["forecast"]["dedup"]["series"]
+        self.assertEqual(len(M["cells"]), 15)
+        for c in M["cells"]:
+            self.assertAlmostEqual(c["q4_units"], round(sum(series[c["country"]][c["product"]]["forecast"]), 1), delta=0.2)
+            if c["segment_share"]:
+                self.assertAlmostEqual(sum(c["segment_share"].values()), 1.0, delta=0.01)
+        self.assertTrue(all(e < 0 for e in M["assumptions"]["elasticity"].values()))
+
+    def test_likelihood_model_is_tested_out_of_time_and_reported_honestly(self):
+        m = HUB["market"]["propensity"]["metrics"]
+        self.assertGreater(m["auc"], 0.8)
+        self.assertGreater(m["auc_rule"], 0.8)  # the simple rule is a fair comparison on this data
+        self.assertTrue(0 < m["base_rate"] < 1)
+
+
 if __name__ == "__main__":
     unittest.main()

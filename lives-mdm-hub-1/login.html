@@ -1,4 +1,84 @@
 <!doctype html>
 <html lang="en" data-theme="light">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sign in · MDM Hub</title><link rel="stylesheet" href="assets/app.css"></head>
-<body class="auth-page"><main class="auth-layout"><section class="auth-intro"><div class="auth-wordmark">▦ LIVES GROUP</div><span class="label">MASTER DATA WORKSPACE</span><h1>Connected teams.<br>Clearer decisions.</h1><p>One workspace for master data requests, approvals and regional performance.</p><div class="auth-features"><span>01 &nbsp; Submit and track requests</span><span>02 &nbsp; Review assigned approvals</span><span>03 &nbsp; Keep master data moving</span></div></section><section class="auth-card"><span class="label">WELCOME TO MDM HUB</span><h2 id="auth-title">Sign in to your workspace</h2><p class="muted">Use your account and assigned role to continue.</p><div class="seg auth-tabs"><button type="button" aria-pressed="true" data-mode="login">Sign in</button><button type="button" aria-pressed="false" data-mode="register">Create account</button></div><form id="auth-form" class="stack"><label class="field">Username<input name="username" autocomplete="username" required minlength="3" maxlength="40" pattern="[A-Za-z0-9._-]+"></label><label class="field">Password<input name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128"></label><label class="field">Role<select name="role"><option value="requester">Requester</option><option value="finance">Finance approver</option><option value="quality">Quality &amp; Regulatory approver</option><option value="bu_head">Business Unit Head · SPD</option><option value="business_support">Business Support approver</option><option value="procurement">Procurement approver</option><option value="mdm">MDM administrator</option></select></label><p id="role-help" class="small muted"></p><p id="auth-error" role="alert" hidden></p><button class="btn primary" id="auth-submit">Sign in</button></form><p class="auth-note small muted">Local prototype · choose a role when registering. Accounts in the same role share the existing workflow assignment.</p></section></main><script src="assets/login.js"></script></body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · MDM Hub</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body class="auth-page">
+  <main class="auth-layout">
+
+    <section class="auth-intro">
+      <div class="auth-wordmark">▦ LIVES GROUP</div>
+      <span class="label">MASTER DATA WORKSPACE</span>
+      <h1>Connected teams.<br>Clearer decisions.</h1>
+      <p>One workspace for master data requests, approvals and regional performance.</p>
+      <div class="auth-features">
+        <span>01 &nbsp; Submit and track requests</span>
+        <span>02 &nbsp; Review assigned approvals</span>
+        <span>03 &nbsp; Keep master data moving</span>
+      </div>
+    </section>
+
+    <section class="auth-card">
+      <span class="label">WELCOME TO MDM HUB</span>
+      <h2 id="auth-title">Sign in to your workspace</h2>
+      <p class="muted">Use your account and assigned role to continue.</p>
+
+      <div class="seg auth-tabs">
+        <button type="button" aria-pressed="true" data-mode="login">Sign in</button>
+        <button type="button" aria-pressed="false" data-mode="register">Create account</button>
+      </div>
+
+      <form id="auth-form" class="stack">
+        <label class="field">
+          Username
+          <input name="username" autocomplete="username" required minlength="3" maxlength="40" pattern="[A-Za-z0-9._\-]+">
+        </label>
+
+        <label class="field">
+          Password
+          <input name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128">
+        </label>
+
+        <label class="field">
+          Role
+          <select name="role">
+            <option value="requester">Requester · SPD</option>
+            <option value="requester_new">Requester · new business unit</option>
+            <option value="finance">Finance approver</option>
+            <option value="quality">Quality &amp; Regulatory approver</option>
+            <option value="bu_head">Business Unit Head · SPD</option>
+            <option value="business_support">Business Support approver</option>
+            <option value="procurement">Procurement approver</option>
+            <option value="mdm">MDM administrator</option>
+          </select>
+        </label>
+
+        <p id="role-help" class="small muted"></p>
+        <p id="auth-error" role="alert" hidden></p>
+
+        <button class="btn primary" id="auth-submit">Sign in</button>
+      </form>
+
+      <!-- Demo accounts: filled in by assets/login.js from assets/demo-accounts.js -->
+      <section class="auth-demo" aria-labelledby="demo-title">
+        <h3 id="demo-title">Demo accounts</h3>
+        <p class="small muted">Pick a person to fill in the form. Every demo account uses the password <code id="demo-password"></code>.</p>
+        <div id="demo-accounts" class="auth-demo-list"></div>
+      </section>
+
+      <p class="auth-note small muted">
+        Choose your role when you create an account. Accounts with the same role share the same approvals.
+        All people, customers and figures in this workspace are synthetic.
+      </p>
+    </section>
+
+  </main>
+
+  <script src="assets/session.js"></script>
+  <script src="assets/demo-accounts.js"></script>
+  <script src="assets/login.js"></script>
+</body>
+</html>

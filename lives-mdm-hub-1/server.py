@@ -14,11 +14,22 @@ ROOT = Path(__file__).resolve().parent
 ACCOUNTS = ROOT / 'test_users.json'
 LOCK = threading.Lock()
 SESSIONS = {}
-ROLES = {'requester': 'amy', 'finance': 'weijie', 'quality': 'siti',
+ROLES = {'requester': 'amy', 'requester_new': 'marcus', 'finance': 'weijie', 'quality': 'siti',
          'bu_head': 'daniel', 'business_support': 'grace', 'procurement': 'hafiz', 'mdm': 'priya'}
 
+ITERATIONS = 600000
+# Copy of the accounts for hosts that cannot run this server (GitHub Pages, a file opened from disk):
+# the login page then checks passwords in the browser against the same salted hashes.
+BROWSER_ACCOUNTS = ROOT / 'assets' / 'accounts.js'
+PUBLIC_BEFORE_LOGIN = {'auth.js', 'login.js', 'session.js', 'demo-accounts.js'}
+
 def password_hash(password, salt):
-    return hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), 600000).hex()
+    return hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), ITERATIONS).hex()
+
+def export_browser_accounts(users, target=None):
+    data = dict(iterations=ITERATIONS, roles=ROLES, users=[{k: u[k] for k in ('username', 'role', 'salt', 'password_hash')} for u in users])
+    (target or BROWSER_ACCOUNTS).write_text('// Generated from test_users.json by server.py (python3 server.py --export). Salted PBKDF2 hashes only.\n'
+                                           'window.HUB_ACCOUNTS = ' + json.dumps(data, indent=1) + ';\n')
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -55,7 +66,7 @@ class Handler(SimpleHTTPRequestHandler):
         public = resolved in [ROOT, ROOT / 'index.html', ROOT / 'login.html'] or (resolved.parent == ROOT / 'assets' and resolved.suffix in {'.js', '.css'})
         if not public:
             return self.send_error(404)
-        if path.startswith('/assets/') and resolved.suffix == '.js' and resolved.name not in {'auth.js', 'login.js'} and not self.account():
+        if path.startswith('/assets/') and resolved.suffix == '.js' and resolved.name not in PUBLIC_BEFORE_LOGIN and not self.account():
             return self.reply(401, {'error': 'Please sign in.'})
         return super().do_GET()
 
@@ -108,6 +119,8 @@ class Handler(SimpleHTTPRequestHandler):
                 temporary.write_text(json.dumps(users, indent=2) + '\n')
                 temporary.chmod(0o600)
                 temporary.replace(ACCOUNTS)
+                if ACCOUNTS.parent == ROOT:  # keep the browser copy in step (tests use a temporary account file)
+                    export_browser_accounts(users)
             elif not user or user['role'] != role or not hmac.compare_digest(user['password_hash'], password_hash(password, user['salt'])):
                 return self.reply(401, {'error': 'Username, password or role is incorrect.'})
         public = dict(username=username, role=role, persona=ROLES[role])
@@ -116,6 +129,11 @@ class Handler(SimpleHTTPRequestHandler):
         self.reply(200, public, f'session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800')
 
 if __name__ == '__main__':
+    import sys
+    if '--export' in sys.argv:
+        export_browser_accounts(json.loads(ACCOUNTS.read_text()))
+        print(f'Wrote {BROWSER_ACCOUNTS.relative_to(ROOT)}')
+        raise SystemExit
     if not ACCOUNTS.exists():
         ACCOUNTS.write_text('[]\n')
         ACCOUNTS.chmod(0o600)

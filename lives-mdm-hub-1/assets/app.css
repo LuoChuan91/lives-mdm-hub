@@ -504,3 +504,32 @@ tbody tr:hover { background: #f7faff; }
   .topbar-account { max-width: 110px; }
   .topbar-actions { gap: 10px; }
 }
+
+/* ---------------------------------------------------------------- market scenarios */
+.mk-inputs td { vertical-align: middle; }
+.mk-inputs input[type="range"] { width: 100%; min-width: 120px; }
+.mk-bar-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 92px; gap: 10px; align-items: center; }
+.mk-bar-track { position: relative; height: 14px; background: var(--surface-2); border-radius: 4px; }
+.mk-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; }
+.mk-bar.neg { background: var(--div-neg); }
+.mk-bar.pos { background: var(--div-pos); }
+.mk-bar-zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--ink-2); }
+.mk-bar-val { text-align: right; }
+
+/* ---------------------------------------------------------------- demo accounts on the login page */
+.auth-demo { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.auth-demo h3 { font-size: 13px; margin: 0; }
+.auth-demo code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; background: var(--surface-2); padding: 1px 5px; border-radius: 3px; color: var(--ink); }
+.auth-demo-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.auth-demo-person { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 8px; text-align: left; padding: 7px 9px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.auth-demo-person:hover { border-color: var(--accent); background: var(--accent-weak); }
+.auth-demo-person b { font-size: 12px; font-weight: 600; }
+.auth-demo-person span { grid-column: 1 / -1; font-size: 10.5px; color: var(--muted); line-height: 1.35; }
+.auth-demo-person code { grid-row: 1; grid-column: 2; font-size: 10px; padding: 0 4px; }
+@media (max-width: 420px) { .auth-demo-list { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------------------------------------------------------------- home: recent activity */
+.activity { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.activity li { display: grid; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 12px; }
+.activity li:last-child { border-bottom: 0; padding-bottom: 0; }
+.btn-link, button.link { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }

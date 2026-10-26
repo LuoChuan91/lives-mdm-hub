@@ -1,7 +1,8 @@
 """End-to-end check in a real browser (Playwright + Chromium).
 
-Serves the repo, opens every page, walks the demo path, fails on any page error, and saves
-screenshots to docs/screenshots/. Run:
+Serves the repo as a static host (as GitHub Pages does, so passwords are checked in the browser),
+signs in as each person in the demo, opens every page, walks the demo path, fails on any page error,
+and saves screenshots to docs/screenshots/. Run:
 
     python tests/e2e.py
     python tests/e2e.py /dist/mdm-request-hub-standalone.html   # test a bundled build instead
@@ -21,7 +22,7 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SHOTS = ROOT / "docs" / "screenshots"
-ROUTES = ["home", "request", "approvals", "tracker", "desk", "admin", "regional", "inbox", "case"]
+ROUTES = ["home", "request", "approvals", "tracker", "desk", "admin", "regional", "market", "inbox", "case"]
 
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
@@ -45,6 +46,26 @@ def shot(page, name, full=True):
     page.wait_for_timeout(120)
 
 
+def sign_in(page, url, user, role=None):
+    """Open the login form and sign in with a demo account (the login page fills in the password)."""
+    page.goto(url)
+    page.wait_for_selector("#auth-form", state="visible")
+    page.click(f"[data-user='{user}']")
+    page.click("#auth-submit")
+    page.wait_for_selector("#view h1")
+    assert page.inner_text("#account-name") == user, f"should be signed in as {user}"
+
+
+def switch_to(page, user):
+    """Log out from the top bar and sign in as the next person, as the demo video does."""
+    page.click(".topbar [data-action='logout']")
+    page.wait_for_selector("#auth-form", state="visible")
+    page.click(f"[data-user='{user}']")
+    page.click("#auth-submit")
+    page.wait_for_selector("#view h1")
+    assert page.inner_text("#account-name") == user
+
+
 def main(target: str | None = None):
     SHOTS.mkdir(parents=True, exist_ok=True)
     httpd = serve()
@@ -65,8 +86,20 @@ def main(target: str | None = None):
 
         pg = page_for()
         pg.goto(base)
-        pg.wait_for_selector("#view h1")
-        for r in ROUTES:
+        pg.wait_for_selector("#auth-form", state="visible")
+        shot(pg, "login.png", full=False)
+        # wrong password is refused
+        pg.fill("input[name=username]", "priya")
+        pg.fill("input[name=password]", "not-the-password")
+        pg.select_option("select[name=role]", "mdm")
+        pg.click("#auth-submit")
+        pg.wait_for_selector("#auth-error", state="visible")
+        assert "incorrect" in pg.inner_text("#auth-error")
+
+        sign_in(pg, base, "priya")
+        pg.evaluate("App.go('request')")
+        assert pg.evaluate("App.getUI().route") == "home", "only requesters open the request form"
+        for r in [r for r in ROUTES if r != "request"]:
             pg.evaluate(f"App.go('{r}')")
             pg.wait_for_timeout(150)
             assert pg.locator("#view h1").count() == 1, f"{r}: no heading"
@@ -74,9 +107,13 @@ def main(target: str | None = None):
             width = pg.evaluate("document.documentElement.scrollWidth")
             assert width <= 1366, f"{r}: horizontal overflow {width}px"
 
-        # Demo path
-        pg.evaluate("App.go('home')")
-        pg.click("text=Start as Amy")
+        # Demo path: each step signed in as the person who does it
+        switch_to(pg, "amy")
+        assert pg.query_selector(".nav a[data-route='desk']") is None, "requesters do not see the MDM desk"
+        assert "Your requests" in pg.inner_text("#view"), "requesters see their own requests on the home page"
+        pg.click(".nav a[data-route='request']")
+        pg.click("[data-action='domain'][data-domain='item']")
+        shot(pg, "request.png")
         pg.select_option("#f-bu", "SPD")
         pg.fill("#f-description", "HbA1c Reagent Kit, 200 tests")
         pg.select_option("#f-product_line", "A")
@@ -98,16 +135,19 @@ def main(target: str | None = None):
         new_id = pg.evaluate("App.getUI().lastSubmitted")
         assert new_id and new_id.startswith("REQ-"), "request should be created"
 
-        pg.evaluate("App.go('home')")
-        pg.click("text=Start as Marcus")
+        switch_to(pg, "marcus")
+        pg.click(".nav a[data-route='request']")
+        pg.click("[data-action='domain'][data-domain='customer']")
+        pg.locator("#f-legal_name").press_sequentially("Natl Univ Hosp", delay=20)
         pg.wait_for_selector("#dup-panel .dup.likely")
         assert "National University Hospital" in pg.inner_text("#dup-panel")
         shot(pg, "demo-2-marcus-duplicate.png")
         pg.click("#dup-panel >> text=Use this record")
         assert pg.evaluate("App.getState().stats.duplicatesStopped") >= 2
 
-        pg.evaluate("App.go('home')")
-        pg.click("text=Open as Wei Jie")
+        switch_to(pg, "weijie")
+        assert "Waiting for you" in pg.inner_text("#view"), "approvers see their open steps on the home page"
+        pg.click(".nav a[data-route='approvals']")
         pg.wait_for_selector(".teams-card")
         shot(pg, "demo-3-weijie-approvals.png")
         before = pg.locator(".teams-card").count()
@@ -122,8 +162,9 @@ def main(target: str | None = None):
         pg.wait_for_timeout(100)
         assert "Fri 2 Oct" in pg.inner_text(".clock-time")
 
-        pg.evaluate("App.go('home')")
-        pg.click("text=Open Settings as Priya")
+        switch_to(pg, "priya")
+        assert "Fri 2 Oct" in pg.inner_text(".clock-time"), "the clock Wei Jie moved should carry over to Priya"
+        pg.click(".nav a[data-route='admin']")
         pg.fill("#bu-code", "QTV")
         pg.fill("#bu-name", "Vietnam clinical solutions")
         pg.fill("#bu-head", "Linh")
@@ -151,6 +192,18 @@ def main(target: str | None = None):
         pg.click("[data-action='product'][data-product='C']")
         shot(pg, "regional-by-country.png")
 
+        pg.evaluate("App.go('market')")
+        pg.click("[data-action='mk-preset'][data-key='none']")
+        pg.wait_for_timeout(100)
+        assert "+SGD 0" in pg.inner_text("#mk-tiles") or "SGD 0" in pg.inner_text("#mk-tiles"), "no-change scenario should show no change"
+        pg.click("[data-action='mk-preset'][data-key='stress']")
+        pg.wait_for_timeout(100)
+        assert "−" in pg.inner_text("#mk-tiles"), "stress scenario should lower order value"
+        pg.locator("#mk-fx-ID").fill("10")
+        pg.wait_for_timeout(150)
+        assert "IDR 10% weaker" in pg.inner_text("#view")
+        shot(pg, "market-stress.png")
+
         pg.evaluate("App.go('inbox')")
         pg.locator("[data-action='inbox-example']").nth(4).click()
         shot(pg, "inbox-example.png")
@@ -160,22 +213,29 @@ def main(target: str | None = None):
         pg.wait_for_timeout(300)
         shot(pg, "case-slider.png")
 
-        # reload keeps state
+        # reload keeps the session and the state
         pg.reload()
         pg.wait_for_selector("#view h1")
+        assert pg.inner_text("#account-name") == "priya", "session should survive a reload"
         assert pg.evaluate(f"App.getState().requests.some(r => r.id === '{new_id}')"), "state should persist across reload"
+        pg.click(".topbar [data-action='logout']")
+        pg.wait_for_selector("#auth-form", state="visible")
 
         # dark mode and phone width
         dk = page_for("dark")
-        dk.goto(base)
-        dk.wait_for_selector("#view h1")
+        sign_in(dk, base, "priya")
         for r in ["home", "regional", "approvals", "case"]:
             dk.evaluate(f"App.go('{r}')")
             dk.wait_for_timeout(120)
             shot(dk, f"dark-{r}.png")
         ph = page_for("light", 390, 844)
         ph.goto(base)
-        ph.wait_for_selector("#view h1")
+        ph.wait_for_selector("#auth-form", state="visible")
+        w = ph.evaluate("document.documentElement.scrollWidth")
+        if w > 390:
+            errors.append(f"phone login: page is {w}px wide")
+        shot(ph, "phone-login.png", full=False)
+        sign_in(ph, base, "amy")
         for r in ["home", "request", "approvals", "regional", "tracker"]:
             ph.evaluate(f"App.go('{r}')")
             ph.wait_for_timeout(120)

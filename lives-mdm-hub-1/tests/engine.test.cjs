@@ -141,3 +141,40 @@ test('working-day arithmetic skips weekends', () => {
   assert.equal(E.addWorkingDays('2026-10-02T09:00', 1), '2026-10-05T09:00');
   assert.equal(E.nextWorkingMorning('2026-10-02T15:00'), '2026-10-05T09:00');
 });
+
+test('market scenarios: no change keeps the forecast; price shocks move orders by the stated elasticity', () => {
+  const M = HUB.market;
+  const close = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  const none = E.marketScenario(M, {});
+  close(none.totals.rev, none.totals.baseRev, 1e-6, 'no change');
+  const base = M.cells.reduce((s, c) => s + c.q4_units * c.price, 0);
+  close(none.totals.baseRev, base, 1e-6, 'baseline is the forecast at list prices');
+
+  // Indonesia's rupiah 10% weaker, all of it passed to customers: SGD price holds, orders fall by elasticity x mix sensitivity
+  const full = E.marketScenario(M, { fx: { ID: 10 }, fxPass: 1 });
+  const cell = full.cells.find((c) => c.country === 'ID' && c.product === 'C');
+  const src = M.cells.find((c) => c.country === 'ID' && c.product === 'C');
+  const mix = Object.entries(src.segment_share).reduce((a, [seg, w]) => a + w * M.assumptions.sensitivity[seg], 0);
+  close(cell.netPrice, 0, 1e-12, 'nothing absorbed');
+  close(cell.unitChange, M.assumptions.elasticity.C * 0.10 * mix, 1e-9, 'units follow the elasticity');
+  assert.ok(full.cells.filter((c) => c.country !== 'ID').every((c) => Math.abs(c.revChange) < 1e-6), 'other countries untouched');
+
+  // a tariff absorbed entirely by Lives Group: orders unchanged, SGD price falls by the tariff
+  const absorbed = E.marketScenario(M, { tariff: { A: 5 }, tariffCountries: ['VN'], tariffPass: 0 });
+  const vn = absorbed.cells.find((c) => c.country === 'VN' && c.product === 'A');
+  close(vn.unitChange, 0, 1e-12, 'customers see no price change');
+  close(vn.rev, vn.baseRev * 0.95, 1e-6, 'net price 5% lower');
+
+  // a demand shift moves units one for one; a stronger currency (negative) lowers prices and lifts orders
+  const dm = E.marketScenario(M, { demand: { TH: -6 } }).cells.find((c) => c.country === 'TH' && c.product === 'B');
+  close(dm.unitChange, -0.06, 1e-12, 'demand shift');
+  const strong = E.marketScenario(M, { fx: { MY: -5 } }).cells.find((c) => c.country === 'MY' && c.product === 'B');
+  assert.ok(strong.unitChange > 0, 'a stronger ringgit makes products cheaper for Malaysian customers');
+
+  // customer-level effects are in the same direction as the country totals
+  const stress = M.presets.find((p) => p.key === 'stress');
+  const r = E.marketScenario(M, { fx: stress.fx, demand: stress.demand, tariff: stress.tariff, tariffCountries: stress.tariff_countries });
+  assert.ok(r.totals.rev < r.totals.baseRev);
+  assert.ok(r.customers.filter((c) => c.country === 'SG').every((c) => Math.abs(c.change) < 1e-6), 'Singapore is untouched by this scenario');
+  assert.ok(r.customers.filter((c) => c.country === 'VN').every((c) => c.change <= 0));
+});

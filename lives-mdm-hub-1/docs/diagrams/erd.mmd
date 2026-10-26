@@ -1,0 +1,154 @@
+erDiagram
+  BUSINESS_UNIT |o--o{ PERSON : "has members"
+  PERSON ||--o{ BUSINESS_UNIT : "heads"
+  PERSON ||--o{ MDM_REQUEST : "submits"
+  BUSINESS_UNIT ||--o{ MDM_REQUEST : "owns"
+  FIELD_DEFINITION ||--o{ REQUEST_FIELD_VALUE : "defines"
+  MDM_REQUEST ||--|{ REQUEST_FIELD_VALUE : "holds"
+  MDM_REQUEST ||--o{ APPROVAL_TASK : "is routed to"
+  APPROVAL_RULE |o--o{ APPROVAL_TASK : "creates"
+  PERSON ||--o{ APPROVAL_TASK : "decides"
+  MDM_REQUEST |o--o{ AUDIT_EVENT : "is logged in"
+  PERSON |o--o{ AUDIT_EVENT : "performs"
+  IMPORT_BATCH |o--|{ MDM_REQUEST : "carries"
+  MDM_REQUEST |o--o| BUSINESS_PARTNER : "creates"
+  MDM_REQUEST |o--o| ITEM : "creates"
+  MDM_REQUEST |o--o| COST_CENTRE : "creates"
+  MDM_REQUEST |o--o{ INBOUND_MESSAGE : "started by"
+  BUSINESS_PARTNER ||--o{ PURCHASE_ORDER : "places"
+  ITEM ||--o{ PURCHASE_ORDER : "is ordered in"
+  BUSINESS_PARTNER |o--o{ INBOUND_MESSAGE : "sends"
+  PURCHASE_ORDER |o--o| INBOUND_MESSAGE : "arrived as"
+  BUSINESS_PARTNER ||--o{ DUPLICATE_PAIR : "is record A in"
+  BUSINESS_PARTNER ||--o{ DUPLICATE_PAIR : "is record B in"
+  BUSINESS_UNIT {
+    string bu_code PK "SPD, QTS, QTG …"
+    string name
+    string head_person_id FK "approves as BU head"
+    string active
+  }
+  PERSON {
+    string person_id PK
+    string name
+    string job_title
+    string approver_role "Finance, QA/RA, MDM …"
+    string bu_code FK "blank until a unit exists"
+  }
+  FIELD_DEFINITION {
+    string field_id PK
+    string domain "customer, item, vendor, cost centre"
+    string label
+    string data_type
+    string required
+    string show_if "e.g. category = IVD reagent"
+    string sensitive "masked by role"
+    string active
+  }
+  APPROVAL_RULE {
+    string rule_id PK
+    string domain
+    string condition "e.g. credit terms requested"
+    string approver_role
+    string stage "same stage = in parallel"
+    string active
+  }
+  MDM_REQUEST {
+    string request_id PK "REQ-1001"
+    string domain
+    string request_type "new or extend"
+    string requester_id FK
+    string bu_code FK
+    string batch_id FK "SAP import file"
+    string status "In approval, MDM check …"
+    string duplicate_decision "none, extend, override"
+    string duplicate_score
+    string sap_code "assigned at MDM check"
+    string submitted_at
+    string completed_at
+  }
+  REQUEST_FIELD_VALUE {
+    string request_id PK, FK
+    string field_id PK, FK
+    string value "masked if sensitive"
+  }
+  APPROVAL_TASK {
+    string task_id PK
+    string request_id FK
+    string rule_id FK
+    string assignee_id FK
+    string status "Pending, Approved, Info requested"
+    string due_at "2 working days"
+    string reminders
+    string escalated
+    string decided_at
+    string comment
+  }
+  AUDIT_EVENT {
+    string event_id PK "append-only"
+    string occurred_at
+    string actor_id FK "person or system"
+    string request_id FK
+    string action "Submitted, Viewed sensitive …"
+    string detail
+  }
+  IMPORT_BATCH {
+    string batch_id PK
+    string dtw_object "oBusinessPartners, oItems …"
+    string created_by FK
+    string created_at
+    string imported_at
+  }
+  BUSINESS_PARTNER {
+    string CardCode PK "C-SG-0018"
+    string CardName
+    string CardType "customer or vendor"
+    string Country_City
+    string FederalTaxID
+    string PayTermsGrpCode
+    string CreditLimit "sensitive"
+    string BankAccount "sensitive"
+    string U_SourceRequest FK "request that created it"
+  }
+  ITEM {
+    string ItemCode PK "A-1001"
+    string ItemName
+    string ProductLine "A, B or C"
+    string Manufacturer_U_MfrPartNo
+    string U_LicenceNo "regulated items"
+    string SalesUnit_U_ListPriceSGD
+    string U_SourceRequest FK
+  }
+  COST_CENTRE {
+    string CenterCode PK "CC-QTS-SG-MKT"
+    string CenterName
+    string InWhichDimension
+    string EffectiveFrom
+    string U_SourceRequest FK
+  }
+  PURCHASE_ORDER {
+    string po_line_id PK
+    string po_date
+    string CardCode FK "customer"
+    string ItemCode FK
+    string country "from the customer"
+    string qty_value_sgd
+    string customer_po_ref
+  }
+  INBOUND_MESSAGE {
+    string msg_id PK
+    string received_at
+    string subject_body
+    string predicted_type "order, enquiry, setup, follow-up"
+    string confidence
+    string CardCode FK "sender, if known"
+    string po_line_id FK "order emails"
+    string request_id FK "setup emails"
+  }
+  DUPLICATE_PAIR {
+    string pair_id PK
+    string record_a FK
+    string record_b FK
+    string score "0 to 100"
+    string band "likely 90+, possible 75–89"
+    string decision "merge or keep both"
+  }

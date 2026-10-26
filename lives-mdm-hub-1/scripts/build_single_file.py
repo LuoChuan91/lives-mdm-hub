@@ -3,7 +3,8 @@
 GitHub Pages serves index.html and assets/ as they are; this script is only for hosts that take a
 single page (for example a Claude artifact). It inlines the stylesheet and every script, keeps the
 Google Fonts link, and sets HUB_ENV so the page hides the "Download CSV" buttons, which such hosts
-block (the "Copy CSV" buttons still work).
+block (the "Copy CSV" buttons still work). The login card from login.html comes first; there is no
+account server in a single file, so passwords are checked in the browser against assets/accounts.js.
 
     python scripts/build_single_file.py            ->  dist/mdm-request-hub.html
     python scripts/build_single_file.py --document ->  a full HTML document (doctype, head, body)
@@ -16,15 +17,35 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
-SCRIPTS = ["assets/data.js", "assets/engine.js", "assets/charts.js", "assets/app.js", "assets/insights.js"]
+SCRIPTS = ["assets/session.js", "assets/demo-accounts.js", "assets/accounts.js", "assets/data.js", "assets/engine.js",
+           "assets/charts.js", "assets/app.js", "assets/insights.js", "assets/market.js", "assets/login.js"]
+# shows the login card, or the app when this browser already has a session
+BOOT = """(function () {
+  var authRoot = document.getElementById('auth-root');
+  var appRoot = document.getElementById('app-root');
+  function open(user) {
+    window.HUB_USER = user; window.HUB_AUTH = 'browser';
+    authRoot.hidden = true; appRoot.hidden = false;
+    window.App.start();
+  }
+  window.HUB_ON_LOGIN = open;
+  var user = window.HubSession.read();
+  if (user) open(user); else authRoot.hidden = false;
+})();"""
 FONTS = ("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600"
          "&family=IBM+Plex+Sans:wght@400;500;600&display=swap")
 
 
-def body_markup() -> str:
-    html = (ROOT / "index.html").read_text(encoding="utf-8")
-    body = re.search(r"<body>(.*?)</body>", html, re.S).group(1)
+def inner_body(name: str) -> str:
+    html = (ROOT / name).read_text(encoding="utf-8")
+    body = re.search(r"<body[^>]*>(.*?)</body>", html, re.S).group(1)
+    body = re.sub(r"\s*<!--.*?-->", "", body, flags=re.S)
     return re.sub(r'\s*<script src="[^"]+"></script>', "", body).strip()
+
+
+def body_markup() -> str:
+    return (f'<div id="auth-root" class="auth-page" hidden>\n{inner_body("login.html")}\n</div>\n'
+            f'<div id="app-root" hidden>\n{inner_body("index.html")}\n</div>')
 
 
 def inline_js(path: str) -> str:
@@ -44,7 +65,9 @@ def build(document: bool = False) -> Path:
     ]
     # a hosted single page blocks downloads; a standalone file opened from disk does not
     scripts = [] if document else ["<script>window.HUB_ENV = 'single';</script>"]
+    scripts += ["<script>window.HUB_SINGLE = true; window.HUB_DEFER_START = true;</script>"]
     scripts += [f"<script>\n{inline_js(p)}\n</script>" for p in SCRIPTS]
+    scripts += [f"<script>\n{BOOT}\n</script>"]
     if document:
         page = ("<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
                 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n"

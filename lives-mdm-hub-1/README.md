@@ -31,16 +31,17 @@ The same duplicates then distort the sales view. A customer recorded twice looks
 | **MDM desk** | The MDM team (Priya) | Final duplicate check, SAP code assignment, the Data Transfer Workbench import file, master data health (existing duplicates) and an append-only audit log. |
 | **Settings** | The MDM team | Business units, form fields, approval rules and service levels are data, not code. Adding Marcus's new business unit takes a minute and needs no IT change. |
 | **Regional view** | Sales and management | Volume and growth by country and product, the forecast and its backtest, where the growth came from, orders kept apart from enquiries and setup requests, signals for sales, recommended actions, and what merging duplicates changes. |
+| **Market scenarios** | Sales, finance and management | What a weaker local currency, a new import tariff or tighter hospital budgets would do to next quarter's orders, by country, product line and customer. Every price sensitivity is a stated assumption you can change on the page. Also shows the test of a purchase-likelihood model. |
 | **Inbox sorting** | Order desk, MDM team | A small text model sorts shared-mailbox emails into purchase orders, enquiries, setup requests and follow-ups, and pulls out the PO number, quantity and item. |
 | **Business case** | Management | Turnaround model with sliders, hours saved, build cost, payback, alternatives, adoption plan and the Microsoft 365 production design. |
 
-A simulated clock lets you move to the next working day to see reminders and escalations fire. Everything you do is saved in your browser; **Reset demo** starts again.
+You sign in as one of the people in the case (the login page lists a demo account for each; see [Sign-in and roles](#sign-in-and-roles)), and the account decides what you see: requesters get the request form, approvers their own approvals, the MDM team the desk and Settings. A simulated clock moves to the next working day to show reminders and escalations, and **Reset demo** starts again. Requests and the clock are shared by every account in the same browser, so a request Amy submits is waiting when Wei Jie signs in.
 
 ![Duplicate check: "Natl Univ Hosp" matches National University Hospital before any approver sees it](docs/img/duplicate-check.png)
 
-### Try it in three minutes
+### What the demo video shows
 
-The home page has a guided demo. Each step switches to the right person:
+The video follows one request through each person's account (sign-in details are under [Sign-in and roles](#sign-in-and-roles)):
 
 1. **Amy** asks for a new reagent pack. Choosing *IVD reagent* adds the licence field and puts Quality/Regulatory on the route. The form flags the 100-test pack as a possible duplicate; she explains why hers is different.
 2. **Marcus** types "Natl Univ Hosp". The form shows that National University Hospital already exists, before any approver sees the request.
@@ -49,6 +50,7 @@ The home page has a guided demo. Each step switches to the right person:
 5. **Priya** adds Marcus's new business unit in Settings; his requests now route to its head.
 6. **Priya** passes the final check and produces the SAP B1 import file.
 7. **Regional view**: growth by country and product, the forecast, and what changes once duplicate customers are merged.
+8. **Market scenarios**: choose *All three at once* to see which countries, product lines and customers a weaker currency, an instrument tariff and slower hospital spending would hit.
 
 ## Results on the synthetic data
 
@@ -71,6 +73,29 @@ What the regional view finds (July to September 2026 against April to June 2026)
 
 ![Regional view: country by product table with growth and 12-month trend](docs/img/regional-view.png)
 
+What the market scenarios show (October to December 2026, against a forecast of about SGD 7.3M of orders):
+
+| Scenario | Change in order value | Hit hardest |
+|---|---|---|
+| Weaker regional currencies (MYR 3%, IDR 6%, THB 4%, VND 5% against the SGD) | −SGD 186k (−2.6%) | Indonesia, −SGD 78k |
+| 5-point tariff on imported instruments into Indonesia, Thailand and Vietnam | −SGD 19k (−0.3%) | Instrument units −3% |
+| Slower hospital spending (Thailand −6%, Vietnam −4%) | −SGD 115k (−1.6%) | Thailand, −SGD 63k |
+| All three at once | −SGD 317k (−4.4%) | Vietnam −SGD 106k, Thailand −SGD 96k; instrument units −7% |
+
+- **Currency moves matter more than an instrument tariff.** A weaker currency touches every product line, and by default half of the move comes straight off Lives Group's Singapore-dollar revenue before a single order is lost; a tariff is mostly passed on, and only instruments react much. *Action: agree price-review triggers with finance for Indonesia and Vietnam, where volume is growing fastest.*
+- **Instruments are the exposed line.** Reagents are needed for every test, so their orders barely move; a hospital can postpone an analyser. *Action: in a tariff or currency shock, offer instrument leasing or staged payments before customers defer.*
+- **The page lists the customers most exposed**, so account managers know whom to call first.
+
+![Market scenarios: a weaker currency, an instrument tariff and slower hospital spending, by country and product line](docs/img/market-scenarios.png)
+
+## Diagrams
+
+The to-be process flow and the ER diagram live in [`docs/diagrams/`](docs/diagrams): PNG and SVG for slides, `.drawio` files to edit in diagrams.net, and `erd.mmd` as Mermaid text. They are generated from small Python scripts (`build_flow.py`, `build_erd.py`, then `render_png.py`), so a change to the entities or steps redraws every format.
+
+![To-be process flow](docs/diagrams/to_be_flow.png)
+
+![Entity-relationship diagram](docs/diagrams/erd.png)
+
 ## How it works
 
 **One engine, two languages.** The analysis runs in Python (`analysis/`) and writes every number the app shows into `assets/data.js`. The parts that must run live in the browser (duplicate matching, the inbox classifier, the workflow and the turnaround model) are written again in JavaScript (`assets/engine.js`). Tests check that the two agree: the same duplicate scores within 0.15 points and the same classifier probabilities within 0.002.
@@ -82,6 +107,10 @@ What the regional view finds (July to September 2026 against April to June 2026)
 **Growth measure.** Units ordered in July to September 2026 divided by units ordered in April to June 2026, minus one (quarter on quarter). Year-on-year growth would need more than 12 months of history. Only customer purchase orders count as volume; enquiries, setup requests and follow-ups are counted separately.
 
 **Turnaround model** (`analysis/process_sim.py`). Today: triage, a 40% chance of bouncing back for missing fields, approvals one after another, possible clarification rounds and manual keying. With the hub: required fields enforced, approvals in parallel, a reminder at the service level and an escalation one working day later. The sliders on the Business case page re-run the same model in the browser.
+
+**Market scenarios** (`marketScenario` in `assets/engine.js`, inputs from `analysis/build_data.py`). The October to December forecast is split by customer using each customer's July to September orders. A weaker local currency raises the local price by the share of the move Lives Group passes on (default 50%; the rest comes off its Singapore-dollar revenue); a tariff raises it by the share passed on (default 80%). Units then change by the product's price elasticity (reagents −0.3, consumables −0.6, instruments −1.2) times how price-sensitive that customer type is (public hospitals 0.5, clinic groups 1.2), plus any demand shift for reasons other than price. Twelve months of orders cannot separate a market effect from normal ups and downs, so these sensitivities are stated assumptions, shown and editable on the page, not estimates.
+
+**Purchase likelihood** (`analysis/propensity.py`). Before building scenarios on a model, we tested whether one could predict which customers will order each product line next quarter. A logistic regression on recent orders, trend, months since the last order and what similar customers buy was trained on January to March 2026 snapshots and tested on July to September 2026, a quarter it never saw. It scores an AUC of 0.976, but the simple rule "ordered this product in the last 3 months" scores 0.973: in this data customers either keep buying a product line or stop, and the going-quiet alerts already catch those who stop. So the scenarios start from the forecast and each customer's recent orders. With 24 to 36 months of SAP B1 history joined to Monetary Authority of Singapore exchange rates and customs tariff schedules, the sensitivities can be estimated by regression and checked with the same backtest as the forecast.
 
 **Inbox sorting** (`analysis/triage.py`). TF-IDF over words and word pairs with a logistic regression, trained on 2,703 messages and tested on 902 it never saw. Greetings and sign-offs are removed so the model learns intent, not politeness. Mistakes cluster on mixed messages (an order with a question attached); below 80% confidence the email goes to a person.
 
@@ -95,6 +124,7 @@ What the regional view finds (July to September 2026 against April to June 2026)
 | Duplicate check | The same matching logic as a small Azure Function called by the flow | Outside help, short engagement |
 | SAP B1 import file | Data Transfer Workbench import; Service Layer write-back in phase 3 | MDM team; SAP partner for phase 3 |
 | Regional view and forecast | Power BI on SAP B1 purchase-order data | Analyst, with help for the data connection |
+| Market scenarios | Power BI what-if parameters on the forecast, fed by MAS exchange rates and tariff schedules | Analyst, with finance |
 | Inbox sorting | AI step in Power Automate on the shared mailbox | Phase 3 pilot |
 
 **Rollout.** Phase 1 (about 8 weeks): customer and item requests, parallel approvals, tracker, audit log and import file, piloted with SPD. Phase 2: all request types and business units, the duplicate-check service, the Power BI regional view, merging existing duplicates. Phase 3: SAP B1 write-back, inbox sorting, automated monthly forecast refresh.
@@ -113,18 +143,22 @@ Every figure on the Business case page can be changed in the app. The defaults:
 - **Build:** 156 internal hours plus 10 days of outside help at SGD 1,200 a day.
 - **Licences:** phase 1 uses standard connectors included in Microsoft 365. The phase 2 duplicate-check service needs a premium connector; that cost is not included and needs checking with Lives Group.
 - **Turnaround with the hub:** approvers reply in 1.4 days on average; 5% of requests still bounce back and 8% need a question; reminders after 2 working days, escalation one working day later.
+- **Market scenarios:** 50% of an exchange-rate move and 80% of a tariff passed into customer prices; price elasticity −0.3 for reagents, −0.6 for consumables, −1.2 for instruments; sensitivity 0.5 for public hospitals, 0.8 for research institutes, 1.0 for private hospitals and independent labs, 1.2 for clinic groups. All are stated, not estimated, and editable on the page.
 - **Data:** 12 months of synthetic history (October 2025 to September 2026); 116 customer records, of which 10 are planted duplicates.
 
 ## Run it yourself
 
-The app uses HTML, CSS and JavaScript with a Python server for login and registration. No build step is needed.
+The app is HTML, CSS and JavaScript with no build step.
 
 ```bash
-# serve the folder, then open http://localhost:8000
+# with the account server (logins checked in Python), then open http://localhost:8000
 python3 server.py
+
+# or any static server, as on GitHub Pages (logins checked in the browser), then open http://localhost:8000
+python3 -m http.server 8000
 ```
 
-Open http://localhost:8000/login.html after starting the server. VS Code Live Server, `python3 -m http.server`, and opening HTML files directly cannot process account requests. The legacy standalone export does not support authenticated login.
+Opening `index.html` directly from disk also works. `python scripts/build_single_file.py --document` writes a single self-contained HTML file to `dist/` for offline demos, login card included.
 
 Rebuild the data and every number in the app:
 
@@ -138,7 +172,7 @@ Tests:
 
 ```bash
 node --test tests/engine.test.cjs                        # workflow engine and Python/JavaScript parity (Node 20+)
-python -m unittest discover -s tests -p "test_*.py"      # analysis
+python -m unittest discover -s tests -p "test_*.py"      # analysis and the account server
 pip install playwright && playwright install chromium
 python tests/e2e.py                                      # every page and the demo path in a real browser
 ```
@@ -155,9 +189,18 @@ The results in this repository were produced with Python 3.13, pandas 3.0, NumPy
 
 ```
 index.html                 the app shell
+login.html                 sign-in page for the signed-in workspace
+server.py                  local account server: login, registration, sessions (standard library only)
+test_users.json            test accounts, passwords stored as salted PBKDF2 hashes
 assets/
   app.js                   workflow pages: request form, approvals, tracker, MDM desk, settings
   insights.js              regional view, inbox sorting, business case
+  market.js                market scenarios page
+  auth.js                  checks who is signed in (server cookie or browser session), then loads the app
+  login.js                 sign-in and registration; checks passwords in the browser when there is no server
+  session.js               the browser sign-in session
+  demo-accounts.js         the demo account per person shown on the login page
+  accounts.js              browser copy of test_users.json (hashes only), written by server.py
   engine.js                rules, routing, SLAs, duplicate matching, classifier, import file (also runs in Node)
   charts.js                small SVG chart helpers, no libraries
   data.js                  generated by analysis/build_data.py
@@ -168,6 +211,7 @@ analysis/
   forecasting.py           forecast methods and the rolling-origin backtest
   process_sim.py           turnaround model
   triage.py                inbox classifier
+  propensity.py            purchase-likelihood model and its out-of-time test
   build_data.py            runs everything and writes assets/data.js
   output/RESULTS.md        digest of every result
 data/                      the synthetic data as CSV, plus planted_patterns.json (ground truth)
@@ -181,28 +225,23 @@ docs/                      demo script and screenshots
 - **Data.** Everything is synthetic, generated by `analysis/generate_data.py`. Patterns were planted on purpose (duplicates, look-alikes that are *not* duplicates, a customer filed under the wrong country, growth in Indonesia, a falling Thai account, concentrated growth in Vietnam) and `data/planted_patterns.json` records each one, so the methods can be checked against the truth.
 - **Security.** The prototype masks bank details and credit limits by role and logs every view and change. It is not a security model; production would rely on Microsoft 365 permissions and an IT security review.
 
-## Local login and role workspace
+## Sign-in and roles
 
-Start the authenticated app with `python3 server.py` and open
-[http://localhost:8000](http://localhost:8000). No extra Python packages are needed for the server.
-Create an account in the registration tab and choose a role; login checks the username,
-password and role against `test_users.json` in the project root. This test account file
-is included in the repository and cannot be downloaded through the Python web server.
-Sign in with username `testuser`, password `TestUser123!`, and role **Requester**.
-Registration also saves accounts to this file; use test credentials only in this shared fixture. Passwords are salted
-PBKDF2 hashes, rather than readable passwords. Sessions expire after eight hours.
+Every demo account uses the password **`Lives2026!`**. The login page lists them too: click a person to fill in the form.
 
-Requesters create requests. Approvers review their assigned workflow steps. MDM accounts
-use the MDM desk and settings. All roles can track requests and view insights. Role selection
-is open at registration for this local prototype. Accounts map to existing demo workflow
-identities (requester → Amy, Finance → Wei Jie, Quality → Siti, SPD head → Daniel,
-Business Support → Grace, Procurement → Hafiz, MDM → Priya), so accounts in the same role
-share workflow assignments. Workflow records still live in browser local storage; they are
-not synchronized between browsers. Account checks run in Python; workflow role restrictions
-run in the browser. This is a local prototype, not a multi-user production authorization system.
+| Person | Username | Role on the login page | Can do |
+|---|---|---|---|
+| Amy | `amy` | Requester · SPD | Create requests (item, customer, vendor, cost centre) |
+| Marcus | `marcus` | Requester · new business unit | Create requests; his business unit is not set up yet |
+| Wei Jie | `weijie` | Finance approver | Approve credit terms, vendor bank details and cost centres |
+| Dr Siti | `siti` | Quality & Regulatory approver | Approve regulated items and principals' quality agreements |
+| Daniel | `daniel` | Business Unit Head · SPD | Approve SPD customers, items and cost centres |
+| Grace | `grace` | Business Support approver | Approve item pricing and public-hospital tender checks |
+| Hafiz | `hafiz` | Procurement approver | Evaluate new vendors |
+| Priya | `priya` | MDM administrator | MDM desk, SAP import file, Settings |
 
-Visual styling is centralized in `assets/app.css`. The dashboard uses a navy header,
-white sidebar, blue active navigation, compact tables and white summary cards. The simulated
-clock controls and persona-switching demo are removed; request timing uses the current UTC time.
-The login requires the Python server; static hosting and standalone HTML exports do not
-provide the account API.
+There is also `testuser` / `TestUser123!` (Requester · SPD). You can create more accounts on the *Create account* tab; each role maps to the person above, so accounts in the same role share that person's approvals.
+
+**How the password is checked.** With `python3 server.py`, the server checks the username, password and role against `test_users.json`, where passwords are stored as salted PBKDF2 hashes, never as readable text; sessions last eight hours, and the server does not serve `test_users.json` or the source files. GitHub Pages and other static hosts cannot run Python, so there the login page checks the password in the browser against the same hashes in `assets/accounts.js` (the server rewrites that file whenever someone registers; `python3 server.py --export` rewrites it by hand). Accounts created on a static host are kept in that browser only.
+
+Requesters create requests, approvers act on their own steps, and only the MDM team opens the MDM desk and Settings; everyone can track requests and use the insight pages. Requests, the simulated clock and the audit log live in the browser's local storage, shared by the accounts in that browser but not between browsers. This is a prototype: the demo passwords are public on purpose, and role restrictions run in the browser. In production, sign-in and permissions would come from Microsoft 365.
