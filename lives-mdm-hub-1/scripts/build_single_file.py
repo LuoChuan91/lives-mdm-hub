@@ -1,13 +1,13 @@
 """Bundle the prototype into one self-contained HTML file.
 
 GitHub Pages serves index.html and assets/ as they are; this script is only for hosts that take a
-single page (for example a Claude artifact). It inlines the stylesheet and every script, keeps the
-Google Fonts link, and sets HUB_ENV so the page hides the "Download CSV" buttons, which such hosts
-block (the "Copy CSV" buttons still work). The login card from login.html comes first; there is no
-account server in a single file, so passwords are checked in the browser against assets/accounts.js.
+single page, and for an offline copy. It inlines the stylesheet and every script, keeps the Google
+Fonts link, and sets HUB_ENV so the page hides the "Download CSV" buttons, which such hosts block
+(the "Copy CSV" buttons still work). The login card from login.html comes first; there is no account
+server in a single file, so passwords are checked in the browser against assets/accounts.js.
 
-    python scripts/build_single_file.py            ->  dist/mdm-request-hub.html
-    python scripts/build_single_file.py --document ->  a full HTML document (doctype, head, body)
+    python3 scripts/build_single_file.py            ->  dist/mdm-request-hub.html
+    python3 scripts/build_single_file.py --document ->  dist/mdm-request-hub-standalone.html (full document)
 """
 from __future__ import annotations
 
@@ -57,9 +57,8 @@ def build(document: bool = False) -> Path:
     css = (ROOT / "assets" / "app.css").read_text(encoding="utf-8")
     parts = [
         "<title>MDM Request Hub</title>",
-        '<meta name="claude:viewport-fit-sides" content="cover">',
-        '<meta name="description" content="Prototype for the SMU DSA 2026 Data Case Competition: a master data '
-        'request hub and regional purchasing view for Lives Group (synthetic data).">',
+        '<meta name="description" content="Lives Group master data workspace: requests, approvals, the SAP '
+        'Business One import file and the regional purchasing view.">',
         f'<link rel="stylesheet" href="{FONTS}">',
         f"<style>\n{css}\n</style>",
     ]

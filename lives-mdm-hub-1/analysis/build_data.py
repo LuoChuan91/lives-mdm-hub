@@ -580,14 +580,20 @@ id_new = [r for r in new_rows if r["country"] == "ID"]
 vn_c = conc_of(conc_dedup, "VN", "C")
 th_worst = min((t_d[("TH", p)] for p in PRODUCTS), key=lambda r: r["growth"] or 0)
 pattaya = next((r for r in gq_dedup if "Pattaya" in r["name"]), None)
+c_d = reg_dedup["countries"]
+year_gain = {c: sum(c_d[c]["value"][9:12]) - sum(c_d[c]["value"][0:3]) for c in COUNTRIES}  # Jul-Sep 2026 against Oct-Dec 2025
+fastest_q = max(COUNTRIES, key=lambda c: c_d[c]["growth"])
 implications = [
-    dict(title="Indonesia is the growth market",
-         text=f"Product A grew {t_d[('ID', 'A')]['growth'] * 100:.0f}% and Product B {t_d[('ID', 'B')]['growth'] * 100:.0f}% quarter on quarter. "
+    dict(title="Indonesia adds the most new business",
+         text=f"Quarterly orders are worth about SGD {year_gain['ID'] / 1000:,.0f}k more than a year ago, more than any other country"
+              f"{'' if max(year_gain, key=year_gain.get) == 'ID' else ' (check: not the largest)'}. "
+              f"Product A grew {t_d[('ID', 'A')]['growth'] * 100:.0f}% and Product B {t_d[('ID', 'B')]['growth'] * 100:.0f}% quarter on quarter. "
               f"{len(id_new)} Indonesian hospitals opened accounts this year and {pipe_by_country['ID']['count']} more are waiting on setup, "
               f"worth about SGD {pipe_by_country['ID']['monthly'] / 1000:,.0f}k a month.",
          action="Fast-track Indonesian account setups and plan extra Product A and B stock for Q4."),
     dict(title=f"Vietnam's instrument growth rests on {words(min(3, vn_c['buyers']))} hospitals",
-         text=(f"Product C grew {t_d[('VN', 'C')]['growth'] * 100:.0f}% quarter on quarter, and all of that volume came from just {words(vn_c['buyers'])} hospitals."
+         text=(f"{'Vietnam grew fastest this quarter, with order value up ' + format(c_d['VN']['growth'] * 100, '.0f') + '%. ' if fastest_q == 'VN' else ''}"
+               f"Product C grew {t_d[('VN', 'C')]['growth'] * 100:.0f}% quarter on quarter, and all of that volume came from just {words(vn_c['buyers'])} hospitals."
                if vn_c["top3_share"] >= 0.999 else
                f"Product C grew {t_d[('VN', 'C')]['growth'] * 100:.0f}% quarter on quarter, but the top three buyers take {vn_c['top3_share'] * 100:.0f}% of the volume."),
          action="Win more instrument and service accounts in Vietnam before planning on this growth continuing."),

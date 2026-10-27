@@ -1,6 +1,0 @@
-# Analysis pipeline (analysis/*.py) and Python tests
-pandas>=2.2
-numpy>=1.26
-scikit-learn>=1.4
-# Browser test only (tests/e2e.py); also run `playwright install chromium`
-# playwright>=1.45

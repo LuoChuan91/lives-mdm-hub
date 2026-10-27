@@ -117,7 +117,7 @@
   App.tracker = tracker;
 
   function waitingOn(req) {
-    if (req.status === 'Needs info') return `${pname(req.requester)} (requestor)`;
+    if (req.status === 'Needs info') return `${pname(req.requester)} (requester)`;
     if (req.status === 'MDM check' || req.status === 'Ready for SAP import') return 'Priya (MDM team)';
     if (req.status === 'In approval') return req.approvals.filter((a) => a.status === 'Pending').map((a) => pname(a.assignee)).join(', ');
     return '';
@@ -248,7 +248,7 @@
         <div><div class="label">With the request hub, simulated</div><div class="hero-num tnum" style="color:var(--accent)">${num1(sim.proposed.mean)}<small>days</small></div><div class="small muted">${Math.round(sim.proposed.share_within_5 * 100)}% within 5 days · <a href="#case" data-action="go" data-route="case">see the model</a></div></div>
       </div></section>
       <div class="grid four">
-        ${tile('Open requests', num(open.length), `${state.requests.filter((r) => r.status === 'Needs info').length} waiting on requestors`)}
+        ${tile('Open requests', num(open.length), `${state.requests.filter((r) => r.status === 'Needs info').length} waiting on requesters`)}
         ${tile('Approvals past target', num(overdue.length), `Target: ${state.config.settings.slaDays} working days`, overdue.length ? 'critical' : '')}
         ${tile('Duplicates stopped at the form', num(state.stats.duplicatesStopped), 'Before any approver saw them')}
         ${tile('Average age of open requests', `${num1(avgAge)} days`, 'Working days, simulated clock')}
@@ -258,7 +258,7 @@
           <div class="flow-step key"><strong>Request form</strong><span class="small">Fields change by request type. Live duplicate check. Rules pick the approvers.</span><span class="who">Amy, Marcus, Nurul</span></div><span class="flow-arrow">→</span>
           <div class="flow-step"><strong>Parallel approvals</strong><span class="small">Finance, Quality/Regulatory and the BU head review at the same time, in Teams or Outlook.</span><span class="who">Wei Jie, Dr Siti, Daniel</span></div><span class="flow-arrow">→</span>
           <div class="flow-step"><strong>MDM final check</strong><span class="small">Re-check duplicates, assign the SAP code, add to the import file.</span><span class="who">Priya</span></div><span class="flow-arrow">→</span>
-          <div class="flow-step"><strong>SAP Business One</strong><span class="small">Import file loaded through the Data Transfer Workbench. Requestor told it is live.</span><span class="who">One clean record per customer</span></div><span class="flow-arrow">→</span>
+          <div class="flow-step"><strong>SAP Business One</strong><span class="small">Import file loaded through the Data Transfer Workbench. Requester told it is live.</span><span class="who">One clean record per customer</span></div><span class="flow-arrow">→</span>
           <div class="flow-step"><strong>Regional view</strong><span class="small">Orders by country and product, growth, forecast and sales actions.</span><span class="who">Sales and management</span></div>
         </div></section>
       <div class="grid sidebar">
@@ -560,7 +560,7 @@
   function teamsCard(req, task) {
     const cfg = state.config;
     const others = req.approvals.filter((a) => a !== task && a.role !== 'MDM');
-    const dupNote = req.dup && req.dup.decision === 'override' ? `<div class="notice warn small"><span class="icon">!</span><div>Possible duplicate of <b>${esc(req.dup.matchName)}</b> (${esc(req.dup.matchId)}, score ${Math.round(req.dup.score)}). Requestor's reason: "${esc(req.dup.reason)}"</div></div>` : req.dup && req.dup.decision === 'extend' ? `<div class="notice small"><span class="icon">i</span><div>Extends existing record <b>${esc(req.dup.matchName)}</b> (${esc(req.dup.matchId)}) to ${esc(req.bu)}.</div></div>` : '';
+    const dupNote = req.dup && req.dup.decision === 'override' ? `<div class="notice warn small"><span class="icon">!</span><div>Possible duplicate of <b>${esc(req.dup.matchName)}</b> (${esc(req.dup.matchId)}, score ${Math.round(req.dup.score)}). Requester's reason: "${esc(req.dup.reason)}"</div></div>` : req.dup && req.dup.decision === 'extend' ? `<div class="notice small"><span class="icon">i</span><div>Extends existing record <b>${esc(req.dup.matchName)}</b> (${esc(req.dup.matchId)}) to ${esc(req.bu)}.</div></div>` : '';
     const infoAsked = task.status === 'Info requested';
     return `<article class="teams-card" aria-label="Approval request ${esc(req.id)}">
       <div class="teams-top"><span class="teams-logo" aria-hidden="true">T</span><span>Approvals · MDM Request Hub</span><span style="margin-left:auto">${taskChip(task)}</span></div>
@@ -673,7 +673,7 @@
   App.views.tracker = function () {
     const rows = filterReqs();
     return `
-      <div class="page-head"><div><span class="label">Request tracker</span><h1>Where every request stands</h1><p>Requestors and approvers see the same status, so nobody has to ask. Click a request for its approvals, details and full history.</p></div></div>
+      <div class="page-head"><div><span class="label">Request tracker</span><h1>Where every request stands</h1><p>Requesters and approvers see the same status, so nobody has to ask. Click a request for its approvals, details and full history.</p></div></div>
       <div class="row between"><div class="seg" role="group" aria-label="Filter">${FILTERS.map(([k, l]) => `<button aria-pressed="${ui.trackerFilter === k}" data-action="tracker-filter" data-filter="${k}">${esc(l)}</button>`).join('')}</div>
         <div style="flex:1;min-width:200px;max-width:320px"><label class="sr" for="tracker-search">Search requests</label><input id="tracker-search" type="search" placeholder="Search by name, ID or person" value="${esc(ui.search)}" data-search></div></div>
       <div class="table-wrap"><table><thead><tr><th>Request</th><th>Status</th><th style="min-width:180px">Progress</th><th>Waiting on</th><th class="num">Age</th></tr></thead><tbody>
@@ -706,7 +706,7 @@
           ${req.approvals.map((a) => `<tr><td><div class="row">${avatar(a.assignee, 'sm')}<div class="stack tight"><span>${esc(pname(a.assignee))}</span><span class="tiny muted">${esc(a.role === 'MDM' ? 'MDM team' : E.roleLabel(cfg, a.role, a.bu))}</span></div></div></td><td class="small">${esc(a.reasons.join('; '))}${a.comment ? `<div class="tiny ink2">"${esc(a.comment)}"</div>` : ''}</td><td>${taskChip(a)}</td><td class="small">${a.decidedAt ? esc(fmtDT(a.decidedAt)) : '–'}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">No approvals needed.</td></tr>'}
         </tbody></table></div></section>
         <section class="panel"><h3>Details</h3><dl class="facts" style="margin-top:10px">${factsFor(req, ui.persona)}</dl>
-          ${req.dup && req.dup.decision !== 'none' ? `<div class="notice ${req.dup.decision === 'override' ? 'warn' : ''} small" style="margin-top:10px"><span class="icon">i</span><div>${req.dup.decision === 'override' ? `Requestor confirmed this is not <b>${esc(req.dup.matchName)}</b> (${esc(req.dup.matchId)}, match ${Math.round(req.dup.score)}): "${esc(req.dup.reason)}"` : `Extends existing record <b>${esc(req.dup.matchName)}</b> (${esc(req.dup.matchId)}).`}</div></div>` : ''}</section>
+          ${req.dup && req.dup.decision !== 'none' ? `<div class="notice ${req.dup.decision === 'override' ? 'warn' : ''} small" style="margin-top:10px"><span class="icon">i</span><div>${req.dup.decision === 'override' ? `Requester confirmed this is not <b>${esc(req.dup.matchName)}</b> (${esc(req.dup.matchId)}, match ${Math.round(req.dup.score)}): "${esc(req.dup.reason)}"` : `Extends existing record <b>${esc(req.dup.matchName)}</b> (${esc(req.dup.matchId)}).`}</div></div>` : ''}</section>
         <section class="panel"><h3>History</h3><p class="small muted" style="margin:4px 0 10px">Every action, from the audit log. Nothing here can be edited.</p><ul class="timeline">${audit.map((a) => `<li><span class="when">${esc(fmtDT(a.at))}</span><span class="dot ${dotFor(a)}"></span><span class="small"><b>${esc(a.action)}</b> · ${esc(a.detail)}</span></li>`).join('')}</ul></section>
       </aside>`;
   }
@@ -746,11 +746,11 @@
         <li>${v.ok ? 'All required fields complete' : `<span style="color:var(--critical-ink)">${Object.keys(v.errors).length} required fields missing</span>`}</li>
         <li>Approved by ${r.approvals.filter((a) => a.status === 'Approved').map((a) => esc(pname(a.assignee))).join(', ') || 'no one (no rules matched)'}</li>
         <li>${matches.length ? `<span style="color:var(--warn-ink)">Possible match: <b>${esc(matches[0].label)}</b> (${esc(matches[0].id)}, ${Math.round(matches[0].score)})</span>` : 'No duplicates in SAP B1 master data or open requests'}</li>
-        ${r.dup && r.dup.decision === 'override' ? `<li>Requestor overrode a possible duplicate: "${esc(r.dup.reason)}"</li>` : ''}
+        ${r.dup && r.dup.decision === 'override' ? `<li>Requester overrode a possible duplicate: "${esc(r.dup.reason)}"</li>` : ''}
       </ul>
       <div class="row"><button class="btn primary small" data-action="mdm-pass" data-id="${r.id}" ${isMdm ? '' : 'disabled'}>Pass check and assign SAP code</button>
-        <button class="btn small" data-action="mdm-return" data-id="${r.id}" ${isMdm ? '' : 'disabled'}>Ask the requestor</button><button class="btn small ghost" data-action="open-req" data-id="${r.id}">Details</button></div>
-      <div class="field" id="ret-wrap-${r.id}" hidden><label for="ret-${r.id}" class="small">What should the requestor fix?</label><textarea id="ret-${r.id}" rows="2"></textarea><button class="btn small" data-action="mdm-return-send" data-id="${r.id}">Send back</button></div>
+        <button class="btn small" data-action="mdm-return" data-id="${r.id}" ${isMdm ? '' : 'disabled'}>Ask the requester</button><button class="btn small ghost" data-action="open-req" data-id="${r.id}">Details</button></div>
+      <div class="field" id="ret-wrap-${r.id}" hidden><label for="ret-${r.id}" class="small">What should the requester fix?</label><textarea id="ret-${r.id}" rows="2"></textarea><button class="btn small" data-action="mdm-return-send" data-id="${r.id}">Send back</button></div>
     </section>`;
   }
 
@@ -864,7 +864,7 @@
       const t = document.getElementById(`ret-${el.dataset.id}`);
       if (!t || !t.value.trim()) { if (t) t.focus(); return; }
       E.mdmReturn(state, el.dataset.id, ui.persona, t.value.trim(), state.now);
-      save(); render(); toast(`Sent back to the requestor with your note.`);
+      save(); render(); toast(`Sent back to the requester with your note.`);
     },
     'download-csv'(el) { const d = el.dataset.domain; const rows = state.requests.filter((r) => r.status === 'Ready for SAP import'); download(`sap-b1-import-${d}-${state.now.slice(0, 10)}.csv`, E.buildImportCsv(rows, d).csv); toast('Import file downloaded.'); },
     'copy-csv'(el) { const d = el.dataset.domain; const rows = state.requests.filter((r) => r.status === 'Ready for SAP import'); copy(E.buildImportCsv(rows, d).csv, 'Import file'); },
@@ -872,7 +872,7 @@
       const ids = state.requests.filter((r) => r.status === 'Ready for SAP import' && r.domain === el.dataset.domain).map((r) => r.id);
       const done = E.markImported(state, ids, ui.persona, state.now);
       save(); render();
-      toast(`${done.length} record${done.length === 1 ? '' : 's'} marked as live in SAP B1. Requestors have been told they can transact.`);
+      toast(`${done.length} record${done.length === 1 ? '' : 's'} marked as live in SAP B1. Requesters have been told they can transact.`);
     },
     'plan-merge'(el) {
       state.stats.mergePlanned = [...new Set([...(state.stats.mergePlanned || []), el.dataset.id])];

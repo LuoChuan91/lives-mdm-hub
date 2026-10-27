@@ -532,7 +532,7 @@
     state.requests.push(req);
     const who = personById(cfg, req.requester);
     log(state, at, req.requester, 'Submitted', req.id, `${who ? who.name : req.requester} submitted a ${req.type === 'extend' ? 'request to extend an existing record' : 'new ' + domainLabel(cfg, req.domain).toLowerCase() + ' request'} for ${req.bu}`);
-    if (req.dup.decision === 'override') log(state, at, req.requester, 'Possible duplicate reviewed', req.id, `Requestor confirmed this is not ${req.dup.matchName} (${req.dup.matchId}, score ${req.dup.score}): "${req.dup.reason}"`);
+    if (req.dup.decision === 'override') log(state, at, req.requester, 'Possible duplicate reviewed', req.id, `Requester confirmed this is not ${req.dup.matchName} (${req.dup.matchId}, score ${req.dup.score}): "${req.dup.reason}"`);
     if (req.dup.decision === 'extend') log(state, at, req.requester, 'Existing record reused', req.id, `Extending ${req.dup.matchName} (${req.dup.matchId}) to ${req.bu} instead of creating a new record`);
     if (!req.approvals.length) {
       req.status = 'MDM check';
@@ -611,7 +611,7 @@
     }
     req.status = 'In approval';
     req.updatedAt = at;
-    log(state, at, personId, 'Information provided', req.id, note ? `"${note}"` : 'Requestor responded');
+    log(state, at, personId, 'Information provided', req.id, note ? `"${note}"` : 'Requester responded');
     return req;
   }
 
@@ -667,7 +667,7 @@
       req.completedAt = at;
       req.updatedAt = at;
       addToMaster(state, req);
-      log(state, at, personId, 'Imported to SAP B1', req.id, `${req.sapCode} loaded through the import file; requestor notified`);
+      log(state, at, personId, 'Imported to SAP B1', req.id, `${req.sapCode} loaded through the import file; requester notified`);
       notify(state, at, req.requester, req.id, 'completed', `${req.title} is live in SAP B1 as ${req.sapCode}. You can transact now.`);
       done.push(req);
     }
@@ -963,7 +963,7 @@
     return out;
   }
 
-  // ------------------------------------------------------------------ demo state
+  // ------------------------------------------------------------------ starting data (the requests every browser begins with)
   function seedState(HUB) {
     init(HUB.textnorm);
     const config = defaultConfig();

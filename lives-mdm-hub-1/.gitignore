@@ -3,8 +3,5 @@ __pycache__/
 .DS_Store
 node_modules/
 dist/
-# full-size screenshots written by tests/e2e.py; the README uses docs/img/
 docs/screenshots/
-# Local account credentials
-/users.json
-/users.tmp
+/test_users.tmp

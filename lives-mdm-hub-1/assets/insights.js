@@ -334,8 +334,8 @@
   const ASSUME_FIELDS = [
     ['mdm_minutes_today', 'MDM team minutes per request today', 'Forwarding, chasing approvers, re-keying incomplete forms'],
     ['mdm_minutes_hub', 'MDM team minutes per request with the hub', 'Final check and import file'],
-    ['requester_minutes_today', 'Requestor minutes per request today', 'Status emails and re-submitting'],
-    ['requester_minutes_hub', 'Requestor minutes per request with the hub', ''],
+    ['requester_minutes_today', 'Requester minutes per request today', 'Status emails and re-submitting'],
+    ['requester_minutes_hub', 'Requester minutes per request with the hub', ''],
     ['approver_minutes_today', 'Approver minutes per approval today', 'Finding the thread, asking questions'],
     ['approver_minutes_hub', 'Approver minutes per approval with the hub', 'One card in Teams'],
     ['duplicate_rate_today', 'Share of new customers created as duplicates today', ''],
@@ -366,7 +366,7 @@
     const simMean = ui().simOverrides ? runSimMean() : bc.sim.proposed.mean;
     const daily = im.revenue_pulled_forward_sgd / (im.new_accounts_per_year * im.days_saved_per_setup);
     const saved = im.customer_setup_days_today - simMean;
-    return { A, rows: [['MDM team', mdm], ['Requestors', req], ['Approvers', appr], [`Duplicates avoided (${num1(dups)} a year)`, dupH], ['Forecast preparation', fc], ['Inbox sorting', tri]], total, benefit, cost, payback: cost / (benefit / 12), pulled: im.new_accounts_per_year * saved * daily, saved };
+    return { A, rows: [['MDM team', mdm], ['Requesters', req], ['Approvers', appr], [`Duplicates avoided (${num1(dups)} a year)`, dupH], ['Forecast preparation', fc], ['Inbox sorting', tri]], total, benefit, cost, payback: cost / (benefit / 12), pulled: im.new_accounts_per_year * saved * daily, saved };
   }
   let simMeanCache = null;
   function runSimMean() { const key = JSON.stringify(ui().simOverrides); if (!simMeanCache || simMeanCache.key !== key) simMeanCache = { key, v: runSim().proposed.mean }; return simMeanCache.v; }

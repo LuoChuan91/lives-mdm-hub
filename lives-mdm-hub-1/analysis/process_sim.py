@@ -15,7 +15,7 @@ import numpy as np
 
 CURRENT = dict(
     triage_mean=1.3, triage_sd=0.9,            # MDM reads the email and forwards it
-    bounce_p=0.40, bounce_mean=4.0, bounce_sd=3.0,  # incomplete form goes back to the requestor
+    bounce_p=0.40, bounce_mean=4.0, bounce_sd=3.0,  # incomplete form goes back to the requester
     approver_mean=4.6, approver_sd=3.6,        # each approver notices the email and replies (sequential)
     clar_p=0.15, clar_mean=2.5, clar_sd=1.5,   # approver asks a clarifying question
     keying_mean=1.5, keying_sd=1.0,            # MDM keys the record into SAP B1

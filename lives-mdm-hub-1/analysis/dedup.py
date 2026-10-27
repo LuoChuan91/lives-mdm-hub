@@ -1,10 +1,10 @@
 """Duplicate matching for master records (customers, vendors, items, cost centres).
 
-The same algorithm runs live in the browser (assets/engine.js) while a requestor types,
+The same algorithm runs live in the browser (assets/engine.js) while a requester types,
 and here in batch over the whole customer master. Both read analysis/textnorm.json,
 and tests/test_parity.py checks the two give the same scores.
 
-Score bands: >= 90 likely duplicate (the form blocks until the requestor picks the
+Score bands: >= 90 likely duplicate (the form blocks until the requester picks the
 existing record or gives a reason), 75-89 possible duplicate (warning), below 75 none.
 """
 from __future__ import annotations

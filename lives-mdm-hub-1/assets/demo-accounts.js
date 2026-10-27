@@ -1,4 +1,4 @@
-// Demo accounts for the people in the guided demo. All the people and data are synthetic, so the
+// One demo account for each person in the case. All the people and data are synthetic, so the
 // password is shared and shown on the login page on purpose. Accounts live in test_users.json.
 window.HUB_DEMO_ACCOUNTS = {
   password: 'Lives2026!',

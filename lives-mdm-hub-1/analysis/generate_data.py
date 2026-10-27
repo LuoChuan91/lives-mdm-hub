@@ -272,7 +272,7 @@ def make_phone(country: str) -> str:
 
 
 def reformat_phone(phone: str) -> str:
-    """Same number, different formatting (how a second requestor typed it)."""
+    """Same number, different formatting (how a second requester typed it)."""
     digits = "".join(ch for ch in phone if ch.isdigit())
     return f"+{digits[:2]} {digits[2:]}"
 
@@ -394,7 +394,7 @@ def simulate_email_request(domain: str, submitted: datetime, approvers=None):
     t += timedelta(days=triage)
     steps.append(dict(step="MDM forwards request", done=t))
     bounces = 0
-    if rng.random() < 0.40:  # incomplete form bounced back to the requestor
+    if rng.random() < 0.40:  # incomplete form bounced back to the requester
         bounces += 1
         t += timedelta(days=float(lognormal(4.0, 3.0)) + 0.5)
         steps.append(dict(step="Requestor supplies missing fields", done=t))
