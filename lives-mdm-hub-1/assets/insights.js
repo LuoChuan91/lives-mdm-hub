@@ -1,6 +1,3 @@
-/* MDM Request Hub - insight pages: regional business view, inbox sorting, business case.
-   Numbers come from analysis/build_data.py (window.HUB_DATA); the simulation and the impact
-   calculator recompute in the browser when sliders or assumptions change. */
 (function () {
   'use strict';
   const App = window.App;
@@ -24,7 +21,6 @@
   };
   const unit = (p) => (products.find((x) => x.code === p) || {}).unit || 'units';
 
-  // ================================================================ regional view
   App.views.regional = function () {
     const u = ui();
     const v = u.regionalView;
@@ -35,7 +31,7 @@
     const pipe = H.requests.pipeline;
     const pipeMonthly = pipe.reduce((s, r) => s + r.expected_monthly, 0);
     return `
-      <div class="page-head"><div><span class="label">Regional business view</span><h1>Customer purchase orders across five countries</h1>
+      <div class="page-head"><div><span class="label">Insights</span><h1>Regional view</h1>
         <p>Products A, B and C from October 2025 to September 2026. Only customer purchase orders count as volume; enquiries and account setup requests are tracked separately further down.</p></div>
         <div class="stack tight"><span class="label">Customer records</span>${seg([['dedup', 'Duplicates merged'], ['raw', 'As in SAP B1 today']], v, 'regional-view', 'view')}</div></div>
       ${v === 'raw' ? `<div class="notice warn"><span class="icon">!</span><div>You are looking at customer records as they sit in SAP B1 today: ${imp.records} records for ${imp.customers} customers. Some customers are split across two records and one Malaysian hospital is filed under Singapore. <a href="#merge-effect" data-action="scroll" data-target="merge-effect">See what merging changes</a>.</div></div>` : ''}
@@ -99,7 +95,7 @@
     const ms = order.map((k) => F.methods.find((m) => m.code === k));
     const fg = H.forecast_gain;
     const rows = ms.map((m) => ({ label: m.label, value: m.wape * 100, strong: m.code === 'combined' || m.code === 'ma6', color: m.code === 'combined' ? 'var(--s1)' : m.code === 'ma6' ? 'var(--s2)' : 'var(--axis)', tip: `<b>${esc(m.label)}</b><div>Error (WAPE): ${(m.wape * 100).toFixed(1)}%</div><div>Bias: ${pct(m.bias, true)}</div><div>Month-to-month swing: ${(m.swing * 100).toFixed(1)}%</div>` }));
-    return `<section class="panel"><div class="panel-head"><div><h2>How much better is the forecast?</h2><p>We hid each month from March to June 2026, forecast the next three months from the months before it, as a planner would have, and compared with what customers actually ordered.</p></div></div>
+    return `<section class="panel"><div class="panel-head"><div><h2>Forecast accuracy</h2><p>We hid each month from March to June 2026, forecast the next three months from the months before it, as a planner would have, and compared with what customers actually ordered.</p></div></div>
       <div class="grid two" style="align-items:start">
         <div><div class="label" style="margin-bottom:10px">Average error, value-weighted (WAPE)</div>${C.barsHtml({ rows, max: Math.max(...rows.map((r) => r.value)) * 1.05, format: (x) => x.toFixed(1) + '%' })}<p class="footnote" style="margin-top:10px">Orange: today's method. Blue: the combined method we recommend.</p></div>
         <div class="stack">
@@ -140,7 +136,7 @@
     const tc = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)'];
     const med = R.new_account_medians;
     const totalQ3 = types.reduce((s, t) => s + R.actual_q3[t], 0);
-    return `<section class="panel"><div class="panel-head"><div><h2>Orders, enquiries and setup requests, kept apart</h2><p>Every message to the shared mailbox is sorted into one of four types (see <a href="#inbox" data-action="go" data-route="inbox">Inbox sorting</a>). Only purchase orders count as demand; setup requests go to the MDM team; enquiries and follow-ups go to sales.</p></div></div>
+    return `<section class="panel"><div class="panel-head"><div><h2>Orders, enquiries and setup requests</h2><p>Every message to the shared mailbox is sorted into one of four types (see <a href="#inbox" data-action="go" data-route="inbox">Inbox sorting</a>). Only purchase orders count as demand; setup requests go to the MDM team; enquiries and follow-ups go to sales.</p></div></div>
       <div class="grid two" style="align-items:start">
         <div><div class="label" style="margin-bottom:6px">Messages a month, by type</div><div class="chart">${C.stacked({ width: App.chartWidth('half'), title: 'Messages by type per month', labels: H.meta.months, series: types.map((t, i) => ({ name: TYPE_LABEL[t], color: tc[i], values: R.by_type_month[t] })) })}</div>
           <div class="legend" style="margin-top:6px">${types.map((t, i) => `<span><i class="box" style="background:${tc[i]}"></i>${TYPE_LABEL[t]}</span>`).join('')}</div></div>
@@ -150,7 +146,7 @@
           <p class="small ink2">Only ${pct(R.actual_q3.purchase_order / totalQ3)} of the mailbox is orders. Counting the rest as demand would overstate volume; leaving setup requests in a sales inbox delays new accounts.</p></div></div>
       <hr class="divider" style="margin:16px 0">
       <div class="stack">
-        <h3>From first enquiry to first order, new accounts this year</h3>
+        <h3>New accounts this year: enquiry to first order</h3>
         ${C.segments({ parts: [
           { label: 'First enquiry to setup request', value: Math.max(1, med.enquiry_to_request), color: 'var(--surface-3)', ink: 'var(--ink)', short: `${Math.round(med.enquiry_to_request)} days`, tip: `<b>Customer deciding</b><div>Median ${med.enquiry_to_request} days from first enquiry to asking for an account</div>` },
           { label: 'Setup request to account in SAP B1', value: Math.max(1, med.setup_days), color: 'var(--div-neg)', short: `${Math.round(med.setup_days)} days`, tip: `<b>Account setup (email process)</b><div>Median ${med.setup_days} days</div>` },
@@ -190,7 +186,7 @@
   }
 
   function implicationsPanel() {
-    return `<section class="panel"><div class="panel-head"><div><h2>What it means and what to do</h2><p>Written from the numbers above; they update with the data.</p></div></div>
+    return `<section class="panel"><div class="panel-head"><div><h2>Findings and actions</h2><p>Written from the numbers above; they update with the data.</p></div></div>
       <div class="grid two">${H.implications.map((i) => `<div class="inset stack tight"><h3>${esc(i.title)}</h3><p class="small ink2">${esc(i.text)}</p><p class="small"><b>Action:</b> ${esc(i.action)}</p></div>`).join('')}</div></section>`;
   }
 
@@ -221,7 +217,6 @@
     'go-health'() { ui().deskTab = 'health'; App.go('desk'); },
   });
 
-  // ================================================================ inbox sorting
   App.views.inbox = function () {
     const m = H.triage.metrics;
     const u = ui();
@@ -229,7 +224,7 @@
     const ex = H.triage.examples;
     const classes = m.confusion.labels;
     return `
-      <div class="page-head"><div><span class="label">Inbox sorting</span><h1>Sort the shared mailbox automatically</h1><p>A small text model reads each email and labels it as a purchase order, an enquiry, a setup request or a follow-up. Orders go to the order desk, setup requests to the MDM team, and only real orders count as demand.</p></div></div>
+      <div class="page-head"><div><span class="label">Insights</span><h1>Inbox sorting</h1><p>A text model labels each email in the shared mailbox as a purchase order, enquiry, setup request or follow-up, so it can go to the right team.</p></div></div>
       <div class="grid four">
         ${tile('Accuracy on unseen emails', `${(m.accuracy * 100).toFixed(1)}%`, `${num(m.test_size)} held-out messages`)}
         ${tile('Sorted without a person', `${Math.round(m.auto_share * 100)}%`, `Confidence of 80% or more; ${(m.auto_accuracy * 100).toFixed(1)}% of those correct`)}
@@ -294,7 +289,6 @@
     },
   });
 
-  // ================================================================ business case
   const simParams = () => {
     const u = ui();
     return { ...H.business_case.sim.params_proposed, ...(u.simOverrides || {}) };
@@ -315,7 +309,7 @@
           <tr><td>Median days</td><td class="num">${num1(out.current.median)}</td><td class="num"><b>${num1(out.proposed.median)}</b></td></tr>
           <tr><td>9 in 10 done within</td><td class="num">${num1(out.current.p90)}</td><td class="num"><b>${num1(out.proposed.p90)}</b></td></tr>
           <tr><td>Done within 5 days</td><td class="num">${pct(out.current.share_within_5)}</td><td class="num"><b>${pct(out.proposed.share_within_5)}</b></td></tr></tbody></table></div>
-        <p class="small ink2">Most of the gain comes from running approvals in parallel and reminding people, not from software speed. The email model is calibrated to the last 12 months (actual average ${num1(bc.history.mean)} days).</p></div></div>`;
+        <p class="small ink2">Most of the gain comes from running approvals in parallel and reminding people. The email model is calibrated to the last 12 months (actual average ${num1(bc.history.mean)} days).</p></div></div>`;
   }
   function simChanged(el) {
     const u = ui();
@@ -378,7 +372,7 @@
       <div class="grid three" style="margin-top:12px">
         <div class="inset"><div class="label">Build cost</div><div class="callout-num">${esc(money(x.cost))}</div><div class="tiny muted">Internal time plus outside help; licences assumed covered by Microsoft 365</div></div>
         <div class="inset"><div class="label">Pays back in</div><div class="callout-num">${num1(x.payback)} months</div><div class="tiny muted">From staff time alone</div></div>
-        <div class="inset"><div class="label">First orders arrive sooner</div><div class="callout-num">${esc(money(x.pulled))} a year</div><div class="tiny muted">Customer setups take ${num1(H.business_case.impacts.customer_setup_days_today)} days today. ${num1(x.saved)} days sooner × ${num(H.business_case.impacts.new_accounts_per_year)} new accounts a year × their daily order value. Timing, not new revenue.</div></div></div>`;
+        <div class="inset"><div class="label">First orders arrive sooner</div><div class="callout-num">${esc(money(x.pulled))} a year</div><div class="tiny muted">Customer setups take ${num1(H.business_case.impacts.customer_setup_days_today)} days today. ${num1(x.saved)} days sooner × ${num(H.business_case.impacts.new_accounts_per_year)} new accounts a year × their daily order value. These orders arrive earlier; they are not extra revenue.</div></div></div>`;
   }
   function impactRefresh() { const el = document.getElementById('impact-table'); if (el) el.innerHTML = impactTable(); }
   function assumeChanged(el) {
@@ -397,7 +391,7 @@
     const A = { ...bc.assumptions, ...(u.assume || {}) };
     const slider = (id, key, label, min, max, step, val, fmt) => `<div class="field"><label for="${id}">${esc(label)}: <b id="${id}-v">${fmt === 'pct' ? Math.round(val * 100) + '%' : key === 'sla_wd' ? `${val} working day${val === 1 ? '' : 's'}` : Number(val).toFixed(1) + ' days'}</b></label><input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${val}" data-sim="${key}" data-fmt="${fmt || ''}"></div>`;
     return `
-      <div class="page-head"><div><span class="label">Business case</span><h1>Faster setups, cleaner records, fewer hours</h1><p>A model of request turnaround, the time saved, what it costs to build on Microsoft 365, and how we get people to stop emailing. Every figure is an assumption you can change; the defaults are explained next to each one.</p></div></div>
+      <div class="page-head"><div><span class="label">Insights</span><h1>Business case</h1><p>Turnaround, time saved, cost and adoption. You can change the assumptions below.</p></div></div>
       <section class="panel"><div class="hero-compare">
         <div><div class="label">Average setup today (12 months of email requests)</div><div class="hero-num tnum">${num1(hist.mean)}<small>days</small></div><div class="small muted">Median ${num1(hist.median)} · 1 in 10 over ${num1(hist.p90)} · ${pct(hist.bounce_rate)} bounced back for missing fields</div></div>
         <div class="hero-arrow" aria-hidden="true">→</div>
@@ -414,11 +408,11 @@
         <div id="impact-table">${impactTable()}</div>
         <details class="data" style="margin-top:14px"><summary>Change the assumptions</summary><div class="assume-grid">${ASSUME_FIELDS.map(([k, l, h]) => `<div class="field"><label for="as-${k}" class="small">${esc(l)}</label><input id="as-${k}" type="number" step="any" value="${A[k]}" data-assume="${k}">${h ? `<span class="help">${esc(h)}</span>` : ''}</div>`).join('')}</div></details></section>
       <div class="grid two">
-        <section class="panel"><h2>Why this, not the alternatives</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Option</th><th>For</th><th>Against</th></tr></thead><tbody>
+        <section class="panel"><h2>Alternatives considered</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Option</th><th>For</th><th>Against</th></tr></thead><tbody>
           <tr class="highlight"><td><b>Request hub on Microsoft 365</b> (ours)</td><td class="small">Uses licences Lives Group already has; the MDM team changes fields, rules and units itself; approvals live in Teams</td><td class="small">Needs one power user; the duplicate check needs a short piece of outside help</td></tr>
           <tr><td>Process fix only: one template and a shared tracker</td><td class="small">Cheapest and fastest to start</td><td class="small">No duplicate check, nothing enforced, still email; does not fix forecasting data</td></tr>
           <tr><td>Commercial MDM software</td><td class="small">Complete feature set</td><td class="small">Costly, needs IT, oversized for one shared SAP B1 database</td></tr></tbody></table></div></section>
-        <section class="panel"><h2>Getting people off email</h2><ul class="small" style="margin:12px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+        <section class="panel"><h2>Adoption</h2><ul class="small" style="margin:12px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px">
           <li><b>Meet approvers where they work.</b> Cards in Teams and Outlook; no new app to learn.</li>
           <li><b>Make the form faster than email.</b> Copy settings from a similar record; most requests take under five minutes.</li>
           <li><b>Auto-reply.</b> The shared mailbox answers every email with the form link and the request status page.</li>
@@ -426,7 +420,7 @@
           <li><b>Champions.</b> One person per business unit, and a starter pack for every new unit, so Marcus's story does not repeat.</li>
           <li><b>Show the numbers.</b> A weekly view for leadership: share of requests through the form, turnaround, overdue approvals.</li></ul></section></div>
       <div class="grid two">
-        <section class="panel"><h2>Deliberately not in version 1</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Left out</th><th>Why</th><th>When</th></tr></thead><tbody>
+        <section class="panel"><h2>Not in version 1</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Left out</th><th>Why</th><th>When</th></tr></thead><tbody>
           <tr><td>Writing straight into SAP B1</td><td class="small">Risky without an IT team; the import file keeps a person checking every record</td><td class="small">Phase 3, through the Service Layer</td></tr>
           <tr><td>Bulk merge of existing duplicates</td><td class="small">Needs data owners to agree; version 1 flags them</td><td class="small">Phase 2 clean-up sprint</td></tr>
           <tr><td>Full security model</td><td class="small">Not in version 1, which masks sensitive fields by role and logs every view</td><td class="small">With an IT security review</td></tr>

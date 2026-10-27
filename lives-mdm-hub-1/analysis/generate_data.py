@@ -1,24 +1,4 @@
-"""Synthetic data generator for the Lives Group MDM case prototype.
-
-EVERYTHING HERE IS SYNTHETIC. Customer names (apart from National University
-Hospital, which the case brief itself uses as its example), registration numbers,
-addresses, phone numbers, bank details and order volumes are invented.
-
-The seed is fixed, so anyone can rebuild identical data:
-
-    python analysis/generate_data.py
-
-Outputs (all in data/):
-    customers.csv          customer master as it sits in SAP B1 today (duplicates included)
-    items.csv              item master (a few near-duplicates included)
-    vendors.csv            vendor master (synthetic bank details)
-    cost_centres.csv       cost centre master
-    purchase_orders.csv    12 months of customer purchase orders, Oct 2025 - Sep 2026
-    inbound_messages.csv   shared-mailbox messages: orders, enquiries, setup requests, follow-ups
-    mdm_requests.csv       12 months of email-era MDM requests with approval timestamps
-    prospects.csv          prospects with an account setup still in flight on 30 Sep 2026
-    planted_patterns.json  ground truth for every pattern deliberately planted in the data
-"""
+"""Generates the synthetic data in data/ with a fixed seed."""
 from __future__ import annotations
 
 import json
@@ -67,9 +47,7 @@ def lognormal(mean: float, sd: float, size=None):
     return rng.lognormal(mu, math.sqrt(sigma2), size)
 
 
-# ---------------------------------------------------------------------------
-# 1. Customer master
-# ---------------------------------------------------------------------------
+# Customer master
 # (country, legal name, segment, size, city, creating entity, products bought, extras)
 #   extras: key   -> storyline handle used below
 #           new   -> date the account setup request was submitted (new customer this year)
@@ -372,9 +350,7 @@ def add_duplicates(rows, by_key):
     return rows + dups
 
 
-# ---------------------------------------------------------------------------
-# 2. Email-era MDM process model (used for history and for new-customer setups)
-# ---------------------------------------------------------------------------
+# Email-era MDM process model (used for history and for new-customer setups)
 APPROVERS = {
     "Customer": lambda: ["Finance", "BU Head", "Business Support"] + (["Regional Director"] if rng.random() < 0.3 else []),
     "Item": lambda: (["Quality/Regulatory"] if rng.random() < 0.6 else []) + ["BU Head", "Business Support"],
@@ -415,9 +391,7 @@ def simulate_email_request(domain: str, submitted: datetime, approvers=None):
     return dict(approvers=approvers, steps=steps, completed=t, bounces=bounces, clarifications=clarifications)
 
 
-# ---------------------------------------------------------------------------
-# 3. Items, vendors, cost centres
-# ---------------------------------------------------------------------------
+# Items, vendors, cost centres
 MANUFACTURERS = ["Meridian Dx", "Sorell Biotech", "Kanto Assay Systems", "Lumen Diagnostics", "Nordic Labware",
                  "Pacifica Medical", "Arden Instruments", "Helix Lab Supplies", "Tanaka Medical"]
 ITEMS = {
@@ -569,9 +543,7 @@ def build_cost_centres():
             for e, c, f, label in specs]
 
 
-# ---------------------------------------------------------------------------
-# 4. Purchase orders
-# ---------------------------------------------------------------------------
+# Purchase orders
 TREND = {  # monthly growth factor for existing customers, by country and product
     "SG": {"A": 1.002, "B": 1.000, "C": 1.004},
     "MY": {"A": 1.008, "B": 1.018, "C": 1.006},
@@ -693,9 +665,7 @@ def build_orders(customers, items):
     return orders
 
 
-# ---------------------------------------------------------------------------
-# 5. Inbound messages (shared mailbox)
-# ---------------------------------------------------------------------------
+# Inbound messages (shared mailbox)
 FIRST = ["Aisha", "Benjamin", "Chen Wei", "Dewi", "Eko", "Farah", "Gan", "Hui Min", "Indra", "Jun", "Kanya", "Linh",
          "Minh", "Nur", "Owen", "Putri", "Quan", "Rizal", "Siti", "Thanh", "Uma", "Vikram", "Wan", "Yusuf", "Zhi Hao",
          "Somchai", "Pim", "Arif", "Mei", "Hafsah"]
@@ -870,7 +840,7 @@ def build_messages(customers, orders, items, prospects_rows):
                     subj, body = msg_followup(c["country"], kind="quote", item=pick(all_items)["description"])
                     add(stamp(d + timedelta(days=int(rng.integers(4, 10)))), c["country"], cid, c["name"], subj, body, "follow_up")
 
-    # setup requests: new customers and prospects (account opening), plus ship-to, item codes, changes
+    # setup requests
     new_accounts = [c for c in customers if c.get("setup_submitted")]
     for c in new_accounts:
         sub = c["setup_submitted"]
@@ -916,7 +886,7 @@ def build_messages(customers, orders, items, prospects_rows):
             body = f"Hi, is our account updated yet? We want to order {int(rng.integers(10, 80))} more boxes once it is done."
             add(stamp(random_day(ym)), c["country"], c["customer_id"], c["name"], subj, body, "follow_up")
 
-    # mixed-intent messages: the same kind of wording turns up under more than one label in real mailboxes
+    # mixed-intent messages
     mixed = [
         ("We would like {q} {u} of {it}. Please send pricing and the delivery date.", "Order and price", {"purchase_order": 0.5, "enquiry": 0.5}),
         ("Please confirm our order for {it}.", "Our order", {"follow_up": 0.5, "purchase_order": 0.5}),
@@ -940,9 +910,7 @@ def build_messages(customers, orders, items, prospects_rows):
     return msgs
 
 
-# ---------------------------------------------------------------------------
-# 6. Assemble
-# ---------------------------------------------------------------------------
+# Assemble
 def main():
     DATA.mkdir(exist_ok=True)
     customers, by_key = build_customers()
@@ -1043,7 +1011,6 @@ def main():
             duplicate_created=r["duplicate"], linked_record=r["linked"], steps=json.dumps(steps),
         ))
 
-    # ---------------- write files ----------------
     cust_df = pd.DataFrame([{
         "customer_id": c["customer_id"], "name": c["name"], "entity": c["entity"], "country": c["country"],
         "city": c["city"], "segment": c["segment"], "size": c["size"], "reg_no": c["reg_no"], "address": c["address"],

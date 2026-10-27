@@ -1,5 +1,4 @@
-/* Small SVG chart helpers for the MDM Request Hub. Every function returns markup; colours come from
-   CSS custom properties so charts follow the light or dark theme. Hover detail uses [data-tip]. */
+// SVG chart helpers
 (function (root) {
   'use strict';
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -106,8 +105,7 @@
     return s + '</svg>';
   }
 
-  // Waterfall: start total, signed steps, end total. The axis starts near the data (and says so)
-  // so changes that are small next to the totals stay visible.
+  // Waterfall. The axis doesn't start at zero, so small steps stay visible.
   function waterfall(o) {
     const W = Math.round(o.width || 720), H = o.height || 260, L = 62, R = 12, T = 24, B = 58;
     let run = 0;

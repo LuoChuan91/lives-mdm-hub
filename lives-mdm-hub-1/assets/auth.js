@@ -1,9 +1,4 @@
-// Checks who is signed in, then loads the app.
-// - With `python3 server.py`, the account server answers api/me from its session cookie.
-// - Anywhere else (GitHub Pages, `python3 -m http.server`, a file opened from disk) there is no account
-//   server, so the session saved by the login page in this browser is used (assets/session.js).
-// No session either way: go to the login page. Paths are relative so the app also works from a
-// sub-folder such as https://<user>.github.io/<repo>/.
+// Check who is signed in (server cookie or browser session), then load the app or go to login.
 (async () => {
   window.HUB_DEFER_START = true;
   let user = null;

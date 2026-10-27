@@ -1,13 +1,4 @@
-"""Monte Carlo model of request turnaround: today's email process vs the request hub.
-
-Today's parameters are the same ones used to generate the 12-month history, so the
-"current" result reproduces the ~18-day average seen in data/mdm_requests.csv.
-The browser runs the same model (assets/engine.js, simulateTurnaround) behind the
-sliders on the Business case page.
-
-All times are calendar days. Every parameter is an assumption and is labelled as such
-in the app.
-"""
+"""Monte Carlo turnaround model: email process vs the hub. Same model as simulateTurnaround in engine.js."""
 from __future__ import annotations
 
 import math

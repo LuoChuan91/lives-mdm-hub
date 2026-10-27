@@ -1,11 +1,4 @@
-"""Shared-mailbox triage: sort each message into purchase order, enquiry, setup request or follow-up.
-
-A TF-IDF + logistic regression model (scikit-learn). The trained vocabulary, IDF weights
-and coefficients are exported to the browser, where assets/engine.js reproduces the exact
-same computation so the app can classify a pasted email without a server.
-In production this step could equally be an LLM call from Power Automate; a small model
-is enough to show the productivity case and keeps the prototype self-contained.
-"""
+"""Mailbox triage: TF-IDF + logistic regression, exported to the browser (assets/engine.js)."""
 from __future__ import annotations
 
 import numpy as np
@@ -18,8 +11,7 @@ from sklearn.model_selection import train_test_split
 CLASSES = ["purchase_order", "enquiry", "setup_request", "follow_up"]
 LABELS = {"purchase_order": "Purchase order", "enquiry": "Enquiry", "setup_request": "Setup request",
           "follow_up": "Follow-up"}
-# Greetings, sign-offs and function words carry no intent. Without this list the model learns
-# that "thank you" means "purchase order" because order emails in the sample tend to end that way.
+# Greetings and sign-offs carry no intent (otherwise "thank you" starts to predict an order)
 STOP_WORDS = ["dear", "hi", "hello", "team", "thank", "thanks", "you", "your", "regards", "best", "warm",
               "sincerely", "cheers", "the", "and", "of", "to", "for", "we", "our", "is", "are", "this", "that",
               "it", "in", "on", "at", "be", "as", "with", "by", "from", "an", "or", "me", "my", "us", "am", "pm"]

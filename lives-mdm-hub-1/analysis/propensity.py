@@ -1,16 +1,6 @@
-"""Purchase likelihood: the chance each customer orders each product line next quarter.
+"""Purchase likelihood per customer and product line for next quarter.
 
-For every customer and product line we take a snapshot at the end of a month ("cutoff") and describe
-the customer's recent behaviour up to that month. The label is whether they ordered that product in
-the three months after. Snapshots from January to March 2026 train the model; the June 2026 snapshot
-(labels July to September) is held out to test it, so the test is on a later period than the training.
-The final model is refitted on every snapshot up to June and scores the September 2026 snapshot,
-which gives the chance of ordering in October to December 2026.
-
-Market shifts (exchange rates, tariffs, demand) are not learned here: twelve months of history cannot
-separate their effect from noise. They are applied on top as scenarios, with stated price sensitivities
-(see assets/engine.js, marketScenario). In production the same features would be joined with MAS
-exchange rates and customs tariff schedules and the sensitivities estimated once 24 to 36 months exist.
+Trained on Jan-Mar 2026 snapshots, tested on the June 2026 snapshot.
 """
 from __future__ import annotations
 
@@ -121,7 +111,7 @@ def train(po: pd.DataFrame, customers: pd.DataFrame, months: list[str], prices: 
     for i in range(5):
         idx = order[i * len(order) // 5:(i + 1) * len(order) // 5]
         deciles.append(dict(band=f"{i * 20}-{(i + 1) * 20}%", predicted=round(float(p_lr[idx].mean()), 3), actual=round(float(te["label"].values[idx].mean()), 3)))
-    # converted customers (bought in the test window but not in the 6 months before), how many the model ranked in its top 20%
+    # new buyers in the test window: share the model ranked in its top 20%
     new_buy = (te["label"] == 1) & (te["months_active6"] == 0)
     top = p_lr >= np.quantile(p_lr, 0.8)
     metrics = dict(
@@ -144,7 +134,7 @@ def train(po: pd.DataFrame, customers: pd.DataFrame, months: list[str], prices: 
     score = build_panel(po, customers, months, SCORE_CUTOFF, with_label=False)
     prob = lr_f.predict_proba(scaler_f.transform(design(score, cols)))[:, 1]
     score["prob"] = prob
-    # what an order is worth when it comes: the customer's own recent quarter, else the median for similar customers
+    # order value: the customer's recent quarter, else the median for similar customers
     buyers = fin[fin["label"] == 1]
     typical = buyers.groupby(["segment", "size", "product"])["next_units"].median().to_dict()
     score["units_if_buy"] = [

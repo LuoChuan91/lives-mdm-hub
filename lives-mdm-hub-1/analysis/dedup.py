@@ -1,12 +1,4 @@
-"""Duplicate matching for master records (customers, vendors, items, cost centres).
-
-The same algorithm runs live in the browser (assets/engine.js) while a requester types,
-and here in batch over the whole customer master. Both read analysis/textnorm.json,
-and tests/test_parity.py checks the two give the same scores.
-
-Score bands: >= 90 likely duplicate (the form blocks until the requester picks the
-existing record or gives a reason), 75-89 possible duplicate (warning), below 75 none.
-"""
+"""Duplicate matching for customers, vendors, items and cost centres (same rules as assets/engine.js)."""
 from __future__ import annotations
 
 import json
@@ -32,7 +24,6 @@ ADDR_ABBR = {"jln": "jalan", "jl": "jalan", "rd": "road", "st": "street", "ave":
              "blvd": "boulevard", "cres": "crescent", "no": ""}
 
 
-# ---------------------------------------------------------------- string helpers
 def fold(s: str) -> str:
     s = (s or "").replace("đ", "d").replace("Đ", "D")
     s = unicodedata.normalize("NFKD", s)
@@ -87,7 +78,6 @@ def initials(tokens) -> str:
     return "".join(t[0] for t in tokens if t and t not in STOP and not t.isdigit())
 
 
-# ---------------------------------------------------------------- names
 def name_tokens(name: str) -> list[str]:
     s = fold(name).lower().replace("&", " and ")
     s = re.sub(r"[^a-z0-9]+", " ", s)
@@ -146,7 +136,6 @@ def fmt(x: float) -> int:
     return int(round(x))
 
 
-# ---------------------------------------------------------------- scoring
 def score_party(q: dict, c: dict, kind: str = "customer") -> dict:
     """Score a customer or vendor record q against an existing record c."""
     ta, tb = name_tokens(q.get("name", "")), name_tokens(c.get("name", ""))
@@ -286,7 +275,6 @@ def band(score: float) -> str:
     return "likely" if score >= LIKELY else "possible" if score >= POSSIBLE else "none"
 
 
-# ---------------------------------------------------------------- batch clustering
 def blocking_keys(rec: dict) -> set[str]:
     toks = name_tokens(rec.get("name", ""))
     keys = {"t:" + t[:4] for t in (distinctive(toks) or toks)}

@@ -1,17 +1,6 @@
-"""Forecasting methods and backtest for monthly purchase-order volumes.
+"""Forecast methods and backtest for monthly purchase orders.
 
-Today's approach (the baseline) is a rolling average of the last 6 months of purchase
-orders. The alternatives here are deliberately simple, explainable methods that suit a
-short (12-month) history:
-
-    damped trend      exponential smoothing with a trend that flattens over the horizon
-    croston (SBA)     for intermittent series that skip months (small accounts, Product C)
-    pooled            forecast the regional total per product, then split it by country
-                      using recent shares (short, noisy country series borrow strength)
-    combined          average of the per-series model and the pooled forecast (our method)
-
-No seasonal model: one year of data shows each calendar month once, which is not enough to
-separate a seasonal pattern from noise.
+Baseline: 6-month rolling average. Ours: damped trend averaged with a pooled regional forecast.
 """
 from __future__ import annotations
 
@@ -88,7 +77,6 @@ def per_series(y, h: int):
     return croston_sba(y, h) if adi(y) > 1.32 else damped_trend(y, h)
 
 
-# ---------------------------------------------------------------- multi-series methods
 # Each method takes {(country, product): history array} and returns {(country, product): [h forecasts]}
 def m_naive(train, h):
     return {k: [float(v[-1])] * h for k, v in train.items()}
@@ -135,10 +123,7 @@ METHODS = {
 
 
 def backtest(series: dict, prices: dict, origins=(5, 6, 7, 8), horizon: int = 3):
-    """Rolling-origin backtest. Training uses months 0..origin; scores the next `horizon` months.
-
-    Returns per-method WAPE and bias by product and overall (value-weighted), plus raw records.
-    """
+    """Rolling-origin backtest: train on months 0..origin, score the next `horizon` months."""
     n = len(next(iter(series.values())))
     rows = []
     for o in origins:
@@ -183,11 +168,7 @@ def interval_multipliers(rows, method="combined", lo_q=0.1, hi_q=0.9):
 
 
 def forecast_swing(series: dict, origins=range(5, 11)):
-    """Average month-to-month change in each method's next-month forecast, relative to the series level.
-
-    A forecast that jumps around with every unusual month makes stock plans nervous even when its
-    average error is low.
-    """
+    """Average month-to-month change in each method's next-month forecast, relative to the series level."""
     out = {}
     for code, (_, fn) in METHODS.items():
         fc = {}

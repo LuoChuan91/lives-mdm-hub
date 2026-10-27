@@ -1,5 +1,4 @@
-// Sign-in session for hosts without the account server (GitHub Pages, a file opened from disk, the
-// offline file). With `python3 server.py` the server keeps the session in a cookie instead.
+// Browser session, used when there is no account server
 (function () {
   const KEY = 'mdm-hub-session-v1';
   const HOURS = 8;

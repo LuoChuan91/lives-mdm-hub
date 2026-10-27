@@ -1,6 +1,3 @@
-/* MDM Request Hub - app shell and the workflow pages.
-   Requests, settings and the audit log are kept in the browser's local storage. Insight pages
-   (regional view, market scenarios, inbox sorting, business case) are in insights.js and market.js. */
 (function () {
   'use strict';
   const H = window.HUB_DATA;
@@ -10,10 +7,7 @@
   E.init(H.textnorm);
   E.loadModel(H.triage.model);
   const ENV = window.HUB_ENV || 'pages';
-  // Everyone signs in (assets/auth.js, assets/login.js); the account decides which person you act as.
-  // Requests and the simulated clock are shared by every account in this browser, so a request Amy
-  // submits waits in Wei Jie's approvals, and a clock Wei Jie moves on is still moved when Priya signs in.
-  // Page settings (open tab, filters) are kept per account.
+  // Requests and the clock are shared by all accounts in this browser, page settings are per account.
   const STORE_KEY = 'mdm-hub-state-v4';
   let USER = null;
   let UI_KEY = 'mdm-hub-ui-v4';
@@ -22,7 +16,6 @@
   let state = null;
   let ui = null;
 
-  // ---------------------------------------------------------------- persistence
   function load() {
     try {
       const raw = localStorage.getItem(STORE_KEY);
@@ -50,7 +43,6 @@
   App.getUI = () => ui;
   App.save = save;
 
-  // ---------------------------------------------------------------- formatting helpers
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const fmtDT = (iso) => { if (!iso) return ''; const d = E.toDate(iso.length === 10 ? iso + 'T00:00' : iso); return `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}, ${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`; };
@@ -142,7 +134,6 @@
   }
   App.toast = toast;
 
-  // ---------------------------------------------------------------- routing and rendering
   const ROUTES = ['home', 'request', 'approvals', 'tracker', 'desk', 'admin', 'regional', 'market', 'inbox', 'case'];
   function go(route) {
     ui.route = ROUTES.includes(route) ? route : 'home';
@@ -155,8 +146,7 @@
   }
   App.go = go;
 
-  // Each account sees only its own tools: requesters create requests, the MDM team has the desk and
-  // Settings, and everyone can track requests and use the insight pages.
+  // Pages each role can open
   function allowed(route) {
     if (['desk', 'admin'].includes(route)) return person(USER.persona).role === 'MDM';
     if (route === 'request') return person(USER.persona).kind === 'requester';
@@ -188,7 +178,7 @@
   }
   App.render = render;
   App.afterRender = {};
-  // Charts are drawn at the pixel width they will occupy, so their text stays at its real size on any screen.
+  // Draw charts at their on-screen width
   App.chartWidth = function (fraction) {
     const view = document.getElementById('view');
     const vw = view && view.clientWidth ? view.clientWidth : Math.max(320, window.innerWidth - (window.innerWidth > 1000 ? 300 : 32));
@@ -230,7 +220,6 @@
       </div>`;
   }
 
-  // ---------------------------------------------------------------- home
   App.views.home = function () {
     const open = state.requests.filter((r) => !['Completed', 'Rejected'].includes(r.status));
     const overdue = state.requests.flatMap((r) => r.approvals.filter((a) => a.status === 'Pending' && a.dueAt && state.now >= a.dueAt));
@@ -240,7 +229,7 @@
     const primary = me.kind === 'requester' ? ['request', 'Start a request'] : me.kind === 'mdm' ? ['desk', 'Open MDM desk'] : ['approvals', 'Open my approvals'];
     return `
       <div class="page-head"><div><span class="label">Lives Group · master data</span><h1>Master Data Dashboard</h1>
-        <p>One request form that stops incomplete and duplicate requests, parallel approvals in Teams and Outlook, a live status page and an import file for SAP Business One. The same clean records feed the regional sales view.</p></div>
+        <p>Master data requests, approvals and the SAP B1 import file, plus the regional sales view.</p></div>
         <div class="row"><button class="btn primary" data-action="go" data-route="${primary[0]}">${primary[1]}</button><button class="btn" data-action="go" data-route="regional">Regional view</button></div></div>
       <section class="panel"><div class="hero-compare">
         <div><div class="label">Email process, last 12 months</div><div class="hero-num tnum">${num1(hist.mean)}<small>days</small></div><div class="small muted">${num(hist.requests)} requests · 1 in 10 took over ${num(hist.p90)} days</div></div>
@@ -267,7 +256,7 @@
       </div>`;
   };
 
-  // What the signed-in person has to do next, by role
+  // What this person needs to do next
   function workPanel(me) {
     const row = (r, third) => `<tr class="clickable" data-action="open-req" data-id="${r.id}"><td><span class="mono small">${esc(r.id)}</span> ${esc(r.title)}</td><td>${statusPill(r.status)}</td><td class="small">${third}</td></tr>`;
     const table = (head, rows, empty) => rows.length
@@ -287,7 +276,7 @@
     return `<section class="panel"><div class="panel-head"><div><h2>Your requests</h2><p>Where each request stands and who it is waiting on.</p></div><button class="btn small" data-action="go" data-route="request">New request</button></div>
       ${table(['Request', 'Status', 'Waiting on'], mine.map((r) => row(r, esc(waitingOn(r)) || '<span class="muted">–</span>')), 'No open requests. Start one with New request.')}</section>`;
   }
-  // Latest changes on the requests this person is part of (everything, for the MDM team)
+  // Recent changes on this person's requests (all requests for the MDM team)
   function activityPanel(me) {
     const mineIds = new Set(state.requests.filter((r) => me.kind === 'mdm' || r.requester === ui.persona || r.approvals.some((a) => a.assignee === ui.persona)).map((r) => r.id));
     const rows = state.audit.filter((a) => a.reqId && mineIds.has(a.reqId)).sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id)).slice(0, 6);
@@ -299,7 +288,6 @@
   }
   App.tile = tile;
 
-  // ---------------------------------------------------------------- new request
   function freshDraft(domain) {
     const p = person(ui.persona);
     return { domain: domain || 'customer', bu: p && p.bu ? p.bu : '', data: {}, type: 'new', dup: { decision: 'none' } };
@@ -326,7 +314,7 @@
     const last = ui.lastSubmitted ? state.requests.find((r) => r.id === ui.lastSubmitted) : null;
     const clones = cloneSources(d.domain);
     return `
-      <div class="page-head"><div><span class="label">New request</span><h1>What do you need set up?</h1><p>Requested by ${esc(p.name)} · ${esc(p.title)}${p.bu ? ' · ' + esc(p.bu) : ''}. Required fields change with the request type, and the duplicate check runs as you type.</p></div></div>
+      <div class="page-head"><div><span class="label">Requests</span><h1>New request</h1><p>Requested by ${esc(p.name)} · ${esc(p.title)}${p.bu ? ' · ' + esc(p.bu) : ''}.</p></div></div>
       ${last ? `<div class="notice good" role="status"><span class="icon">${ICON.check}</span><div class="stack tight"><strong>${esc(last.id)} submitted: ${esc(last.title)}</strong><span class="small">${last.approvals.length ? `${last.approvals.map((a) => esc(pname(a.assignee))).join(', ')} ${last.approvals.length > 1 ? 'were' : 'was'} notified in Teams and Outlook and can approve at the same time.` : 'Sent straight to the MDM team.'} Expected in SAP B1 by ${esc(fmtD(expectedDone()))}.</span><div class="row"><button class="btn small" data-action="open-req" data-id="${last.id}">Track this request</button><button class="btn small ghost" data-action="dismiss-last">Dismiss</button></div></div></div>` : ''}
       <div class="domain-cards" role="group" aria-label="Request type">${cfg.domains.filter((x) => x.active).map((x) => `<button class="domain-card" data-action="domain" data-domain="${x.key}" aria-pressed="${x.key === d.domain}"><strong>${esc(x.label)}</strong><span>${esc(DOMAIN_INFO[x.key] || x.sap)}</span></button>`).join('')}</div>
       <div class="grid sidebar">
@@ -349,7 +337,7 @@
         <div class="stack"><section class="panel" id="route-panel">${routePanel()}</section>
           <section class="panel"><h3>What happens after you submit</h3><ol class="small ink2" style="margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
             <li>Every approver gets a card in Teams and an email, at the same time.</li><li>You can see where the request stands on the tracker, any time.</li>
-            <li>Anyone who needs more information asks inside the request, not by email.</li><li>Priya checks it, adds it to the SAP B1 import file and you are told when it is live.</li></ol></section></div>
+            <li>Questions about the request are asked inside the request.</li><li>Priya checks it, adds it to the SAP B1 import file and you are told when it is live.</li></ol></section></div>
       </div>`;
   };
 
@@ -443,7 +431,7 @@
     return msgs.length ? `<div class="notice critical"><span class="icon">!</span><div>${msgs.map((m) => `<div>${esc(m)}</div>`).join('')}</div></div>` : '';
   }
 
-  // Only touch the DOM when the markup actually changed, so scroll position and clicks are never disturbed.
+  // Only update the DOM if the markup changed
   function setHTML(id, html) {
     const el = document.getElementById(id);
     if (!el || el._html === html) return;
@@ -523,7 +511,6 @@
   App.refreshRequestSide = refreshRequestSide;
   App.freshDraft = freshDraft;
 
-  // ---------------------------------------------------------------- approvals
   const DEFAULT_KEYS = E.defaultConfig().fields.reduce((m, f) => { (m[f.domain] = m[f.domain] || new Set()).add(f.key); return m; }, {});
   const KEY_FACTS = {
     customer: ['country', 'city', 'reg_no', 'segment', 'products', 'payment_terms', 'credit_limit', 'tender_ref'],
@@ -588,14 +575,14 @@
     const notes = state.notifications.filter((n) => n.to === ui.persona).sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8);
     const isApprover = p.kind === 'approver' || p.kind === 'mdm';
     return `
-      <div class="page-head"><div><span class="label">My approvals</span><h1>${esc(p.name)}'s approvals</h1><p>In production these cards arrive in Microsoft Teams and Outlook as Power Automate approvals. Here they work the same way: approve, ask for information or reject, with every decision logged.</p></div></div>
+      <div class="page-head"><div><span class="label">Requests</span><h1>${esc(p.name)}'s approvals</h1><p>In production these cards come through Teams and Outlook. Every decision is logged.</p></div></div>
       ${p.kind === 'mdm' ? `<div class="notice"><span class="icon">i</span><div>Final checks and the SAP import file are on the <a href="#desk" data-action="go" data-route="desk">MDM desk</a>.</div></div>` : ''}
       <div class="grid sidebar">
         <div class="stack">
           ${isApprover ? `<div class="seg" role="group" aria-label="Filter">${[['mine', `Waiting on me (${tasks.length})`], ['done', `Decided by me (${done.length})`]].map(([k, l]) => `<button aria-pressed="${ui.approvalsTab === k}" data-action="approvals-tab" data-tab="${k}">${esc(l)}</button>`).join('')}</div>` : ''}
           ${isApprover && ui.approvalsTab === 'mine' ? (tasks.length ? `<div class="stack" style="gap:16px">${tasks.map(({ req, task }) => teamsCard(req, task)).join('')}</div>` : `<div class="panel empty"><strong>Nothing waiting on you</strong><span class="small">New requests that need ${esc(p.name)} will appear here and in Teams.</span></div>`) : ''}
           ${isApprover && ui.approvalsTab === 'done' ? `<div class="table-wrap"><table><thead><tr><th>Request</th><th>Decision</th><th>When</th></tr></thead><tbody>${done.map(({ req, task }) => `<tr class="clickable" data-action="open-req" data-id="${req.id}"><td><span class="mono small">${esc(req.id)}</span> ${esc(req.title)}</td><td>${taskChip(task)}</td><td class="small">${esc(fmtDT(task.decidedAt))}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">No decisions yet.</td></tr>'}</tbody></table></div>` : ''}
-          ${!isApprover || mineNeedInfo.length ? `<section class="panel"><div class="panel-head"><div><h2>Your requests that need you</h2><p>Approvers ask inside the request, so nobody hunts through email threads.</p></div></div>
+          ${!isApprover || mineNeedInfo.length ? `<section class="panel"><div class="panel-head"><div><h2>Your requests that need you</h2><p>Questions from approvers on your requests.</p></div></div>
             ${mineNeedInfo.length ? mineNeedInfo.map((r) => infoReply(r)).join('') : '<p class="muted small">Nothing needs your input right now.</p>'}</section>` : ''}
           ${!isApprover ? `<section class="panel"><div class="panel-head"><div><h2>Your open requests</h2></div><button class="btn small" data-action="go" data-route="request">New request</button></div>${myOpen.length ? `<div class="table-wrap"><table><thead><tr><th>Request</th><th>Status</th><th>Waiting on</th></tr></thead><tbody>${myOpen.map((r) => `<tr class="clickable" data-action="open-req" data-id="${r.id}"><td><span class="mono small">${esc(r.id)}</span> ${esc(r.title)}</td><td>${statusPill(r.status)}</td><td class="small">${esc(waitingOn(r))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted small">No open requests.</p>'}</section>` : ''}
         </div>
@@ -652,7 +639,6 @@
     },
   });
 
-  // ---------------------------------------------------------------- tracker and request drawer
   const FILTERS = [
     ['all', 'All'], ['mine', 'Mine'], ['approvals', 'With approvers'], ['info', 'Needs info'], ['mdm', 'With MDM'], ['done', 'Completed'],
   ];
@@ -673,7 +659,7 @@
   App.views.tracker = function () {
     const rows = filterReqs();
     return `
-      <div class="page-head"><div><span class="label">Request tracker</span><h1>Where every request stands</h1><p>Requesters and approvers see the same status, so nobody has to ask. Click a request for its approvals, details and full history.</p></div></div>
+      <div class="page-head"><div><span class="label">Requests</span><h1>Request tracker</h1><p>Click a request to see its approvals, details and history.</p></div></div>
       <div class="row between"><div class="seg" role="group" aria-label="Filter">${FILTERS.map(([k, l]) => `<button aria-pressed="${ui.trackerFilter === k}" data-action="tracker-filter" data-filter="${k}">${esc(l)}</button>`).join('')}</div>
         <div style="flex:1;min-width:200px;max-width:320px"><label class="sr" for="tracker-search">Search requests</label><input id="tracker-search" type="search" placeholder="Search by name, ID or person" value="${esc(ui.search)}" data-search></div></div>
       <div class="table-wrap"><table><thead><tr><th>Request</th><th>Status</th><th style="min-width:180px">Progress</th><th>Waiting on</th><th class="num">Age</th></tr></thead><tbody>
@@ -718,7 +704,6 @@
     'go-desk'() { ui.drawer = null; go('desk'); },
   });
 
-  // ---------------------------------------------------------------- MDM desk
   App.views.desk = function () {
     const isMdm = person(ui.persona).role === 'MDM';
     const checks = state.requests.filter((r) => r.status === 'MDM check');
@@ -730,7 +715,7 @@
     if (ui.deskTab === 'health') body = healthTab(isMdm);
     if (ui.deskTab === 'audit') body = auditTab();
     return `
-      <div class="page-head"><div><span class="label">MDM desk</span><h1>Final check, import file, master data health</h1><p>The MDM team's view. Approved requests get a last duplicate check, then go into a file the team loads into SAP Business One. Nothing is written to SAP directly in version 1.</p></div></div>
+      <div class="page-head"><div><span class="label">MDM team</span><h1>MDM desk</h1><p>Approved requests get a final duplicate check here, then go into the SAP B1 import file.</p></div></div>
       ${isMdm ? '' : `<div class="notice"><span class="icon">i</span><div class="row between" style="flex:1"><span>This is the MDM team's desk. Only the MDM team can act here.</span></div></div>`}
       <div class="seg" role="group" aria-label="Desk sections">${tabs.map(([k, l]) => `<button aria-pressed="${ui.deskTab === k}" data-action="desk-tab" data-tab="${k}">${esc(l)}</button>`).join('')}</div>
       ${body}`;
@@ -766,7 +751,7 @@
         <details class="data" style="margin-top:10px"><summary>Show the full file</summary><div class="csv-preview">${esc(isMdm ? out.csv : maskCsv(out.csv, d))}</div></details>
         <div class="row" style="margin-top:12px">${ENV === 'pages' ? `<button class="btn small" data-action="download-csv" data-domain="${d}" ${isMdm ? '' : 'disabled'}>Download CSV</button>` : ''}<button class="btn small" data-action="copy-csv" data-domain="${d}" ${isMdm ? '' : 'disabled'}>Copy CSV</button>
           <button class="btn primary small" data-action="mark-imported" data-domain="${d}" ${isMdm ? '' : 'disabled'}>Mark as imported into SAP B1</button></div>
-        ${d === 'vendor' ? '<p class="footnote" style="margin-top:8px">This file holds bank details. In production it is generated into a restricted SharePoint library, not emailed.</p>' : ''}</section>`;
+        ${d === 'vendor' ? '<p class="footnote" style="margin-top:8px">This file holds bank details. In production it is saved to a restricted SharePoint library.</p>' : ''}</section>`;
     }).join('');
   }
   function csvRow(csv, i) {
@@ -808,7 +793,7 @@
     const vend = H.dedup.vendors.map((v) => `<tr><td class="small">${esc(v.names.join(' / '))}</td><td class="mono small">${esc(v.member_ids.join(', '))}</td><td class="small">${esc(v.reasons.join(' · '))}</td></tr>`).join('');
     return `<div class="notice"><span class="icon">i</span><div>The same matcher that runs on the request form scanned all ${num(H.dedup.impact.records)} customer records in SAP B1. It found <b>${q.found} customers recorded twice</b> and sent ${q.review_pairs} look-alike pair${q.review_pairs === 1 ? '' : 's'} to a person to decide. Checked against known duplicates, it found every one with no false merges. Merging changes the regional view: see <a href="#regional" data-action="go" data-route="regional">what merging changes</a>.</div></div>
       ${cl}
-      <section class="panel"><h3>Look-alikes for a person to decide</h3><p class="small muted" style="margin:4px 0 10px">Scores 75 to 89: similar enough to check, not similar enough to merge automatically.</p><div class="table-wrap"><table><thead><tr><th>Record</th><th>Looks like</th><th class="num">Match</th><th>Why</th></tr></thead><tbody>${review || '<tr><td colspan="4" class="muted">None.</td></tr>'}</tbody></table></div></section>
+      <section class="panel"><h3>Look-alikes for a person to decide</h3><p class="small muted" style="margin:4px 0 10px">Scores 75 to 89: close enough that a person should check them.</p><div class="table-wrap"><table><thead><tr><th>Record</th><th>Looks like</th><th class="num">Match</th><th>Why</th></tr></thead><tbody>${review || '<tr><td colspan="4" class="muted">None.</td></tr>'}</tbody></table></div></section>
       <div class="grid two"><section class="panel"><h3>Items recorded twice</h3><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Keep</th><th>Duplicate</th><th>Why</th></tr></thead><tbody>${items}</tbody></table></div></section>
         <section class="panel"><h3>Vendors recorded twice</h3><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Names</th><th>Codes</th><th>Why</th></tr></thead><tbody>${vend}</tbody></table></div></section></div>`;
   }
@@ -884,7 +869,6 @@
     'copy-audit'() { copy(auditCsv(), 'Audit log'); },
   });
 
-  // ---------------------------------------------------------------- settings
   App.views.admin = function () {
     const isMdm = person(ui.persona).role === 'MDM';
     const cfg = state.config;
@@ -896,7 +880,7 @@
       body = `<div class="grid sidebar"><section class="panel flush"><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Code</th><th>Business unit</th><th>Head (approves)</th><th class="num">Requests</th></tr></thead><tbody>
           ${cfg.businessUnits.map((b) => `<tr><td class="mono">${esc(b.code)}</td><td>${esc(b.name.split(' · ').slice(1).join(' · ') || b.name)}</td><td><div class="row">${avatar(b.head, 'sm')}${esc(pname(b.head))}</div></td><td class="num">${state.requests.filter((r) => r.bu === b.code).length}</td></tr>`).join('')}
         </tbody></table></div></section>
-        <section class="panel"><h3>Add a business unit</h3><p class="small muted" style="margin:4px 0 12px">It appears on the request form at once and its requests route to its head. No form, email list or code to change.</p>
+        <section class="panel"><h3>Add a business unit</h3><p class="small muted" style="margin:4px 0 12px">It appears on the request form straight away, and its requests go to its head.</p>
           <div class="stack"><div class="field"><label for="bu-code">Code</label><input id="bu-code" type="text" maxlength="4" placeholder="e.g. QTV" ${dis}></div>
           <div class="field"><label for="bu-name">Name</label><input id="bu-name" type="text" placeholder="e.g. Vietnam clinical solutions" ${dis}></div>
           <div class="field"><label for="bu-head">Head's name</label><input id="bu-head" type="text" placeholder="e.g. Linh" ${dis}></div>
@@ -943,7 +927,7 @@
     }
     const recent = state.audit.filter((a) => a.action === 'Settings changed').sort((a, b) => b.at.localeCompare(a.at)).slice(0, 5);
     return `
-      <div class="page-head"><div><span class="label">Settings</span><h1>Change the process without IT</h1><p>Business units, form fields, approval rules and service levels are data, not code. The MDM team edits them here; in production they are SharePoint lists that the Power Automate flows read.</p></div></div>
+      <div class="page-head"><div><span class="label">MDM team</span><h1>Settings</h1><p>Business units, form fields, approval rules and service levels. In production these are SharePoint lists.</p></div></div>
       ${isMdm ? '' : `<div class="notice"><span class="icon">i</span><div class="row between" style="flex:1"><span>Only the MDM team edits settings. You are seeing them read-only.</span></div></div>`}
       <div class="seg" role="group" aria-label="Settings sections">${tabs.map(([k, l]) => `<button aria-pressed="${ui.adminTab === k}" data-action="admin-tab" data-tab="${k}">${esc(l)}</button>`).join('')}</div>
       ${body}
@@ -994,7 +978,6 @@
     },
   });
 
-  // ---------------------------------------------------------------- shell actions
   Object.assign(App.actions, {
     go(el, e) { if (e) e.preventDefault(); go(el.dataset.route); },
     menu() { ui.menuOpen = !ui.menuOpen; render(); },
@@ -1012,7 +995,7 @@
         save();
         window.HUB_USER = null;
         if (window.HUB_SINGLE) {
-          // the offline file shows its login card again; the next person starts on Home
+          // single-file build: back to the login card
           try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
           location.reload();
         }
@@ -1038,7 +1021,6 @@
     },
   });
 
-  // ---------------------------------------------------------------- events
   function onClick(e) {
     const el = e.target.closest('[data-action]');
     if (!el || el.tagName === 'SELECT' || (el.tagName === 'INPUT' && el.type !== 'checkbox' && el.type !== 'button')) return;
@@ -1112,5 +1094,5 @@
     if (['regional', 'case'].includes(ui.route)) render();
   }
   App.start = start;
-  // assets/auth.js (or the offline file's start-up script) calls App.start() once someone has signed in.
+  // Called by auth.js after sign-in
 })();

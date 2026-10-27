@@ -1,13 +1,7 @@
-"""Bundle the prototype into one self-contained HTML file.
+"""Bundle the prototype into one HTML file.
 
-GitHub Pages serves index.html and assets/ as they are; this script is only for hosts that take a
-single page, and for an offline copy. It inlines the stylesheet and every script, keeps the Google
-Fonts link, and sets HUB_ENV so the page hides the "Download CSV" buttons, which such hosts block
-(the "Copy CSV" buttons still work). The login card from login.html comes first; there is no account
-server in a single file, so passwords are checked in the browser against assets/accounts.js.
-
-    python3 scripts/build_single_file.py            ->  dist/mdm-request-hub.html
-    python3 scripts/build_single_file.py --document ->  dist/mdm-request-hub-standalone.html (full document)
+    python3 scripts/build_single_file.py             -> dist/mdm-request-hub.html
+    python3 scripts/build_single_file.py --document  -> dist/mdm-request-hub-standalone.html
 """
 from __future__ import annotations
 

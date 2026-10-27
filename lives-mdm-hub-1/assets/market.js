@@ -1,6 +1,3 @@
-/* MDM Request Hub - market scenarios: exchange rates, tariffs and demand shifts layered on the forecast.
-   The scenario model is Engine.marketScenario (assets/engine.js); the data comes from analysis/build_data.py.
-   Scenarios are hypothetical and every sensitivity is a stated assumption the viewer can change. */
 (function () {
   'use strict';
   const App = window.App;
@@ -40,13 +37,12 @@
   };
   const demandWords = (v) => (!v ? 'No change' : `${v > 0 ? '+' : '−'}${Math.abs(v)}%`);
 
-  // ---------------------------------------------------------------- page
   App.views.market = function () {
     const s = state();
     const presets = M.presets.map((p) => `<button aria-pressed="${s.preset === p.key}" data-action="mk-preset" data-key="${p.key}">${esc(p.label)}</button>`).join('');
     return `
-      <div class="page-head"><div><span class="label">Market scenarios</span><h1>What exchange rates, tariffs and demand shifts do to next quarter</h1>
-        <p>The October to December forecast comes from order history. Here you layer market changes on top: a weaker local currency or a new import tariff raises what customers pay, and orders respond by how price-sensitive each product and customer type is. Every scenario is hypothetical and every sensitivity is an assumption you can change.</p></div></div>
+      <div class="page-head"><div><span class="label">Insights</span><h1>Market scenarios</h1>
+        <p>How exchange rates, import tariffs and changes in demand would affect next quarter's orders. The price sensitivities are assumptions you can change.</p></div></div>
       <div class="stack tight"><span class="label">Start from a scenario</span><div class="seg" role="group">${presets}${s.preset === 'custom' ? '<button aria-pressed="true" disabled>Your changes</button>' : ''}</div></div>
       <div id="mk-tiles"></div>
       <div class="grid two" style="align-items:start">
@@ -87,7 +83,7 @@
     const elRows = PRODUCTS.map((p) => `<tr><td>Product ${p.code}, ${esc(p.name.toLowerCase())}</td><td class="num"><input id="mk-el-${p.code}" type="number" step="0.1" min="-3" max="0" value="${el[p.code]}" data-mk="elasticity" data-key="${p.code}" style="width:76px" aria-label="Price elasticity of product ${p.code}"></td><td class="small ink2">${esc(A.elasticity_note[p.code])}</td></tr>`).join('');
     const seRows = Object.keys(A.sensitivity).map((k) => `<tr><td>${esc(k)}</td><td class="num"><input id="mk-se-${k.replace(/\W+/g, '-')}" type="number" step="0.1" min="0" max="3" value="${se[k]}" data-mk="sensitivity" data-key="${esc(k)}" style="width:76px" aria-label="Sensitivity of ${esc(k)}"></td></tr>`).join('');
     const pass = (id, key, label, val, help) => `<div class="field"><label for="${id}">${esc(label)}: <b id="${id}-v">${Math.round(val * 100)}%</b></label><input id="${id}" type="range" min="0" max="1" step="0.05" value="${val}" data-mk="${key}"><span class="help">${esc(help)}</span></div>`;
-    return `<div class="panel-head" style="margin:0"><div><h2>Assumptions behind the scenario</h2><p>Stated, not estimated: twelve months of orders cannot separate a market effect from normal ups and downs. Change any of them.</p></div></div>
+    return `<div class="panel-head" style="margin:0"><div><h2>Assumptions behind the scenario</h2><p>These are our assumptions, because twelve months of orders is too little to estimate them. You can change any of them.</p></div></div>
       <div class="grid two" style="align-items:start">
         <div class="stack">
           ${pass('mk-fxpass', 'fxPass', 'Share of an exchange-rate move passed into customer prices', s.fxPass, 'The rest comes off Lives Group’s Singapore-dollar revenue.')}
@@ -104,7 +100,7 @@
 
   function modelPanel() {
     const pm = M.propensity.metrics;
-    return `<div class="panel-head" style="margin:0"><div><h2>Can a model predict which customers will buy?</h2><p>We tested it before building on it.</p></div></div>
+    return `<div class="panel-head" style="margin:0"><div><h2>Purchase likelihood model</h2><p>We tested it before building on it.</p></div></div>
       <div class="grid three">
         ${App.tile('Machine-learning model', pm.auc.toFixed(3), 'AUC on Jul to Sep 2026, a quarter it never saw')}
         ${App.tile('Simple rule', pm.auc_rule.toFixed(3), '“Ordered this product in the last 3 months”')}
@@ -114,7 +110,6 @@
       <div class="inset small"><b>In production.</b> Join SAP B1 orders with daily exchange rates from the Monetary Authority of Singapore and the customs tariff schedules of the five countries. Once 24 to 36 months of history exist, estimate each product’s price sensitivity with a regression that includes exchange rates and tariffs, check it with the same backtest as the forecast, and replace the assumptions above with the estimates. The sliders become what-if parameters in Power BI.</div>`;
   }
 
-  // ---------------------------------------------------------------- results
   function results() {
     const s = state();
     const r = E.marketScenario(M, s);
@@ -163,7 +158,7 @@
       ${list.length ? `<div class="table-wrap"><table><thead><tr><th>Customer</th><th class="num">Expected, no change</th><th class="num">This scenario</th><th class="num">Change</th><th class="num">%</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="small ink2">No customer is affected by this scenario. Pick a scenario above or move a slider.</p>'}`);
   }
 
-  // results are drawn after the page renders, and again on every input
+  // redraw on every input
   App.afterRender.market = results;
 
   function labelFor(el) {

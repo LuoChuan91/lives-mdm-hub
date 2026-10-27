@@ -1,13 +1,4 @@
-"""Builds every number the prototype shows, from the synthetic data in data/.
-
-    python analysis/build_data.py
-
-Writes:
-    assets/data.js                      window.HUB_DATA, loaded by the app
-    analysis/output/results.json        the same numbers, used by tests and the summary
-    analysis/output/RESULTS.md          a readable digest of the findings
-    tests/fixtures/triage_parity.json   held-out messages with model probabilities (browser parity test)
-"""
+"""Runs the analysis on data/ and writes assets/data.js and analysis/output/."""
 from __future__ import annotations
 
 import json
@@ -77,7 +68,6 @@ def r3(x):
     return None if x is None else round(float(x), 3)
 
 
-# ---------------------------------------------------------------- load
 cust = pd.read_csv(DATA / "customers.csv", dtype=str).fillna("")
 cust["credit_limit"] = pd.to_numeric(cust["credit_limit"])
 items = pd.read_csv(DATA / "items.csv", dtype=str).fillna("")
@@ -91,7 +81,6 @@ prospects = pd.read_csv(DATA / "prospects.csv", dtype=str).fillna("")
 truth = json.loads((DATA / "planted_patterns.json").read_text())
 cinfo = cust.set_index("customer_id")
 
-# ---------------------------------------------------------------- duplicates
 recs = [dict(id=r.customer_id, name=r["name"], reg_no=r.reg_no, phone=r.phone, address=r.address,
              country=r.country, city=r.city, email=r.email, created=r.created) for _, r in cust.iterrows()]
 clusters, review, scored = cluster(recs, "customer")
@@ -127,7 +116,6 @@ def cname(cid):
     return cinfo.loc[cid, "name"]
 
 
-# ---------------------------------------------------------------- regional view
 def regional(view):
     cid, cc = view_cols(view)
     units = {c: {p: [0.0] * 12 for p in PRODUCTS} for c in COUNTRIES}
@@ -196,7 +184,6 @@ def decomposition(view, product=None):
                 existing=round(sum(v for _, v in existing)), existing_count=len(existing))
 
 
-# ---------------------------------------------------------------- signals
 def going_quiet(view):
     """Customers whose last order is well past their usual rhythm for their main product."""
     cid, cc = view_cols(view)
@@ -276,7 +263,6 @@ def concentration(view):
     return sorted(rows, key=lambda r: (-r["flag"], -r["top3_share"]))
 
 
-# ---------------------------------------------------------------- inbound messages and new accounts
 msgs["month"] = msgs["received_at"].str[:7]
 types = ["purchase_order", "enquiry", "setup_request", "follow_up"]
 by_type_month = {t: [int(((msgs["true_type"] == t) & (msgs["month"] == m)).sum()) for m in MONTHS] for t in types}
@@ -330,7 +316,6 @@ pipeline.sort(key=lambda r: (-r["expected_monthly"], -r["days_waiting"]))
 pipe_by_country = {c: dict(count=sum(1 for r in pipeline if r["country"] == c),
                            monthly=sum(r["expected_monthly"] for r in pipeline if r["country"] == c)) for c in COUNTRIES}
 
-# ---------------------------------------------------------------- forecasting
 def series(view):
     cid, cc = view_cols(view)
     pv = po.pivot_table(index=[cc, "product"], columns="month", values="qty", aggfunc="sum").reindex(columns=MONTHS).fillna(0)
@@ -381,10 +366,7 @@ forecast_gain = dict(baseline_wape=base_w["wape"], ours_wape=ours_w["wape"], bas
                      ours_bias=ours_w["bias"], relative_reduction=r3(1 - ours_w["wape"] / base_w["wape"]),
                      ours_swing=ours_w["swing"], naive_wape=naive_w["wape"], naive_swing=naive_w["swing"])
 
-# ---------------------------------------------------------------- market scenarios
-# Exchange rates, tariffs and demand shifts are applied on top of the combined forecast as scenarios
-# (assets/engine.js, marketScenario). The sensitivities below are stated assumptions, not estimates:
-# 12 months of history cannot separate a market effect from noise.
+# Market scenario assumptions (used by marketScenario in assets/engine.js)
 CURRENCY = {"SG": "SGD", "MY": "MYR", "ID": "IDR", "TH": "THB", "VN": "VND"}
 MARKET_ASSUMPTIONS = dict(
     elasticity={"A": -0.3, "B": -0.6, "C": -1.2},
@@ -426,7 +408,6 @@ prop_score, prop_metrics, prop_drivers = propensity.train(po, masters_df, MONTHS
 market = dict(assumptions=MARKET_ASSUMPTIONS, presets=MARKET_PRESETS, currency=CURRENCY, cells=market_cells,
               customers=market_customers, propensity=dict(metrics=prop_metrics, drivers=prop_drivers))
 
-# ---------------------------------------------------------------- triage model
 model, tmetrics, parity, vec, clf = triage.train(msgs)
 msgs["predicted"] = triage.predict_all(msgs, vec, clf)
 pred_q3 = {t: int((msgs[msgs["month"].isin(Q3)]["predicted"] == t).sum()) for t in types}
@@ -463,7 +444,6 @@ dedup_fixture = dict(
 )
 (ROOT / "tests" / "fixtures" / "dedup_parity.json").write_text(json.dumps(clean(dedup_fixture)))
 
-# ---------------------------------------------------------------- business case
 done = hist[hist["status"] == "Completed"].copy()
 done["turnaround_days"] = pd.to_numeric(done["turnaround_days"])
 counts = hist["approvals"].value_counts().sort_index()
@@ -517,7 +497,6 @@ impacts = dict(
     requests_per_year=int(per_year), customer_setups_per_year=cust_setups, messages_per_year=int(msgs_per_year),
 )
 
-# ---------------------------------------------------------------- dedup impact
 reg_raw, reg_dedup = regional("raw"), regional("dedup")
 gq_raw, gq_dedup = going_quiet("raw"), going_quiet("dedup")
 xs_raw, xs_dedup = cross_sell("raw"), cross_sell("dedup")
@@ -566,7 +545,6 @@ for cl in clusters:
     cluster_rows.append(dict(master_id=cl["master_id"], members=members, score=link["score"], reasons=link["reasons"]))
 cluster_rows.sort(key=lambda r: -sum(m["value"] for m in r["members"]))
 
-# ---------------------------------------------------------------- implications
 def words(n):
     return ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"][n] if 0 <= n <= 10 else str(n)
 
@@ -616,7 +594,6 @@ implications = [
          action="Merge the duplicate records and stop new ones at the request form."),
 ]
 
-# ---------------------------------------------------------------- master data for the live duplicate check
 def recs_out(df, cols):
     return [{c: r[c] for c in cols} for r in df.to_dict("records")]
 
@@ -678,7 +655,6 @@ results.update(dedup_quality=match_quality, dedup_impact=dedup_impact, history=h
                triage=tmetrics, forecast_methods=forecast["dedup"]["methods"], propensity=prop_metrics)
 (OUT / "results.json").write_text(json.dumps(clean(results), indent=2))
 
-# ---------------------------------------------------------------- digest
 lines = ["# Results digest (synthetic data)", "",
          "Generated by `analysis/build_data.py`. All figures come from the synthetic dataset in `data/`.", "",
          "## Duplicate matching",

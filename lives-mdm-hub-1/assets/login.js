@@ -1,8 +1,4 @@
-// Sign-in and registration.
-// With `python3 server.py` the server checks the password (api/login, api/register).
-// Without it (GitHub Pages, a file opened from disk, the offline file) the browser checks the password
-// against the same salted PBKDF2 hashes from test_users.json (assets/accounts.js). Accounts created
-// that way are kept in this browser only.
+// Sign-in and registration. Without server.py, passwords are checked in the browser (assets/accounts.js).
 let mode = 'login';
 const form = document.querySelector('#auth-form');
 const error = document.querySelector('#auth-error');
@@ -28,7 +24,6 @@ document.querySelectorAll('[data-mode]').forEach((button) => button.addEventList
   error.hidden = true;
 }));
 
-// ---------------------------------------------------------------- demo accounts
 const DEMO = window.HUB_DEMO_ACCOUNTS;
 function fillAccount(username) {
   const person = DEMO && DEMO.people.find((p) => p.username === username);
@@ -47,7 +42,6 @@ if (DEMO && list) {
   list.addEventListener('click', (e) => { const b = e.target.closest('[data-user]'); if (b) fillAccount(b.dataset.user); });
 }
 
-// ---------------------------------------------------------------- checks shared with server.py
 function validate(data) {
   const username = String(data.username || '').trim().toLowerCase();
   const password = data.password;
@@ -57,7 +51,6 @@ function validate(data) {
   return { username, password, role: data.role };
 }
 
-// ---------------------------------------------------------------- the account server
 async function serverAuth(data) {
   if (location.protocol === 'file:' || window.HUB_SINGLE) return null;
   let response;
@@ -73,7 +66,6 @@ async function serverAuth(data) {
   return result;
 }
 
-// ---------------------------------------------------------------- the browser check
 const hex = (bytes) => Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, '0')).join('');
 const unhex = (s) => new Uint8Array(s.match(/../g).map((h) => parseInt(h, 16)));
 async function pbkdf2(password, salt, iterations) {
@@ -112,7 +104,6 @@ async function browserAuth({ username, password, role }) {
   return session;
 }
 
-// ---------------------------------------------------------------- submit
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   submit.disabled = true;

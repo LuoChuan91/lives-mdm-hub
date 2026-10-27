@@ -1,7 +1,3 @@
-/* MDM Request Hub
-   Layout: an operations console. A sticky left rail holds who you are, where you are and the
-   simulated clock; the work area is plain panels. The one distinctive object is the Teams-style
-   approval card. Record codes and request IDs use the mono face, like SAP B1 itself. */
 :root {
   --bg: #f3f6f5;
   --surface: #ffffff;
@@ -100,7 +96,6 @@ code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 
-/* ---------------------------------------------------------------- shell */
 .app {
   display: grid;
   grid-template-columns: 252px minmax(0, 1fr);
@@ -163,7 +158,6 @@ code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
   .nav-group { display: none; }
 }
 
-/* ---------------------------------------------------------------- surfaces */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; min-width: 0; }
 .panel.flush { padding: 0; overflow: hidden; }
 .panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 14px; }
@@ -198,7 +192,6 @@ code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
 .hero-num small { font-size: 18px; font-weight: 500; color: var(--ink-2); margin-left: 4px; }
 .hero-arrow { font-size: 26px; color: var(--muted); }
 
-/* ---------------------------------------------------------------- controls */
 button, .btn { font: inherit; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font-weight: 500; cursor: pointer; text-decoration: none; line-height: 1.2; white-space: nowrap; }
 .btn:hover { background: var(--surface-2); color: var(--ink); }
@@ -246,7 +239,6 @@ input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px;
 .switch input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
 .switch input:disabled + span { opacity: 0.5; cursor: not-allowed; }
 
-/* ---------------------------------------------------------------- status */
 .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: var(--surface-3); color: var(--ink-2); line-height: 1.5; }
 .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.9; }
 .pill.plain::before { display: none; }
@@ -291,7 +283,6 @@ tr.clickable:hover td { background: var(--surface-2); }
 tr.highlight td { background: var(--accent-weak); }
 .cell-heat { border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 120px; }
 
-/* ---------------------------------------------------------------- request form */
 .domain-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 @media (max-width: 760px) { .domain-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .domain-card { text-align: left; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 12px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; color: var(--ink); }
@@ -394,7 +385,7 @@ th.sapcol { text-transform: none; letter-spacing: 0; font-family: var(--font-mon
 .persona select { margin-top: 2px; }
 .persona-meta { display: flex; gap: 10px; align-items: center; }
 
-/* Lives operations theme — shared dashboard, navigation and account styling. */
+/* Lives theme */
 :root, :root[data-theme="dark"], :root:not([data-theme="light"]) {
   color-scheme: light;
   --bg: #f5f7fb; --surface: #fff; --surface-2: #f0f4fa; --surface-3: #e7edf6;
@@ -480,7 +471,7 @@ tbody tr:hover { background: #f7faff; }
   .work { padding: 20px 14px; }
 }
 
-/* Keep logout accessible in the header on desktop and mobile. */
+/* logout button */
 .topbar-actions { display: flex; align-items: center; gap: 18px; }
 .btn.topbar-logout { background: transparent; border-color: #ffffff55; color: #fff; }
 .btn.topbar-logout:hover { background: #ffffff18; border-color: #ffffff99; color: #fff; }
@@ -491,7 +482,6 @@ tbody tr:hover { background: #f7faff; }
   .topbar-actions { gap: 10px; }
 }
 
-/* ---------------------------------------------------------------- market scenarios */
 .mk-inputs td { vertical-align: middle; }
 .mk-inputs input[type="range"] { width: 100%; min-width: 120px; }
 .mk-bar-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 92px; gap: 10px; align-items: center; }
@@ -502,7 +492,6 @@ tbody tr:hover { background: #f7faff; }
 .mk-bar-zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--ink-2); }
 .mk-bar-val { text-align: right; }
 
-/* ---------------------------------------------------------------- demo accounts on the login page */
 .auth-demo { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
 .auth-demo h3 { font-size: 13px; margin: 0; }
 .auth-demo code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; background: var(--surface-2); padding: 1px 5px; border-radius: 3px; color: var(--ink); }
@@ -514,7 +503,6 @@ tbody tr:hover { background: #f7faff; }
 .auth-demo-person code { grid-row: 1; grid-column: 2; font-size: 10px; padding: 0 4px; }
 @media (max-width: 420px) { .auth-demo-list { grid-template-columns: minmax(0, 1fr); } }
 
-/* ---------------------------------------------------------------- home: recent activity */
 .activity { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .activity li { display: grid; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 12px; }
 .activity li:last-child { border-bottom: 0; padding-bottom: 0; }

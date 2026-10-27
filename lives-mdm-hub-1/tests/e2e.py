@@ -1,11 +1,7 @@
-"""End-to-end check in a real browser (Playwright + Chromium).
-
-Serves the repo as a static host (as GitHub Pages does, so passwords are checked in the browser),
-signs in as each person in the demo, opens every page, walks the demo path, fails on any page error,
-and saves screenshots to docs/screenshots/. Run:
+"""Browser test (Playwright): signs in as each person, opens every page and walks the demo path.
 
     python tests/e2e.py
-    python tests/e2e.py /dist/mdm-request-hub-standalone.html   # test a bundled build instead
+    python tests/e2e.py /dist/mdm-request-hub-standalone.html
 """
 from __future__ import annotations
 

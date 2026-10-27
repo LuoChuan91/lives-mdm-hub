@@ -1,16 +1,6 @@
-/*
- * MDM Request Hub - engine.
- * Pure logic shared by the app (browser) and the tests (Node): duplicate matching,
- * form rules, approval routing, the request workflow with SLA reminders, the SAP B1
- * import file, the turnaround simulation and the inbox classifier.
- *
- * The duplicate matcher mirrors analysis/dedup.py and reads the same rules file
- * (analysis/textnorm.json, embedded in data.js), so browser and batch scores agree.
- */
 (function (root) {
   'use strict';
 
-  // ------------------------------------------------------------------ text rules
   let T = null;
   const S = {};
 
@@ -233,7 +223,7 @@
     return domain === 'item' ? q.description : domain === 'cost_centre' ? (q.code || '') + (q.name || '') : q.name;
   }
 
-  // Candidates from master data plus requests already in flight (so two people can't request the same record).
+  // Master data plus requests still in progress
   function findMatches(state, domain, data, bu, limit) {
     const q = queryFromForm(domain, data, bu);
     const text = String(queryText(domain, q) || '').trim();
@@ -261,7 +251,6 @@
     return out.slice(0, limit || 4);
   }
 
-  // ------------------------------------------------------------------ dates (simulated clock, minutes precision, no time zone)
   const toDate = (iso) => new Date(iso + ':00Z');
   const toIso = (d) => d.toISOString().slice(0, 16);
   function addWorkingDays(iso, n) {
@@ -295,7 +284,6 @@
   }
   const daysBetween = (aIso, bIso) => (toDate(bIso) - toDate(aIso)) / 86400000;
 
-  // ------------------------------------------------------------------ configuration (what the Settings page edits)
   const COUNTRY_OPTIONS = ['SG', 'MY', 'ID', 'TH', 'VN'];
 
   function defaultConfig() {
@@ -397,7 +385,6 @@
     };
   }
 
-  // ------------------------------------------------------------------ form rules
   function evalCond(cond, data) {
     if (!cond) return true;
     const v = data[cond.field];
@@ -479,7 +466,6 @@
     return steps.sort((a, b) => a.stage - b.stage);
   }
 
-  // ------------------------------------------------------------------ state, audit and notifications
   function log(state, at, actor, action, reqId, detail) {
     state.audit.push({ id: `A${++state.seq.audit}`, at, actor, action, reqId: reqId || null, detail: detail || '' });
   }
@@ -683,7 +669,7 @@
     if (req.domain === 'cost_centre') state.master.cost_centres.push({ code: d.code, name: d.name, entity: req.bu, country: d.country, owner: d.owner, valid_from: d.valid_from });
   }
 
-  // SLA engine: reminder when an approval passes its due time, escalation one working day later.
+  // Reminder when an approval is overdue, escalation a working day later
   function tick(state, at) {
     const cfg = state.config;
     const events = [];
@@ -733,8 +719,7 @@
     const s = String(value || '');
     if (!s) return '';
     const compact = s.replace(/\s/g, '');
-    // Account-style numbers keep their last four digits so the approver can match a bank letter;
-    // amounts (credit limits) and names are hidden completely.
+    // keep the last four digits of account numbers; hide amounts and names
     if (/^[\d-]{6,}$/.test(compact)) return '•••• ' + compact.replace(/\D/g, '').slice(-4);
     return '••••';
   }
@@ -744,7 +729,6 @@
     log(state, at, personId, 'Viewed sensitive field', reqId, `${personById(state.config, personId).name} viewed ${fd ? fd.label : fieldKey}`);
   }
 
-  // ------------------------------------------------------------------ settings changes (logged like any other change)
   function changeSettings(state, personId, at, kind, payload) {
     const cfg = state.config;
     if (kind === 'addField') {
@@ -793,13 +777,12 @@
     throw new Error('Unknown settings change');
   }
 
-  // ------------------------------------------------------------------ SAP B1 import file
   function csvCell(v) {
     const s = v === undefined || v === null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
 
-  // Business partner currency follows the country; '##' is SAP B1's code for "all currencies".
+  // '##' = all currencies in SAP B1
   const CURRENCY = { SG: 'SGD', MY: 'MYR', ID: 'IDR', TH: 'THB', VN: 'VND', DE: 'EUR', FR: 'EUR', IT: 'EUR', NL: 'EUR', IE: 'EUR', ES: 'EUR', US: 'USD', GB: 'GBP', CH: 'CHF', JP: 'JPY', KR: 'KRW', CN: 'CNY', AU: 'AUD' };
   function currencyFor(country) { return CURRENCY[String(country || '').toUpperCase()] || '##'; }
   const IMPORT_LAYOUT = {
@@ -826,7 +809,6 @@
     return { object: layout.object, csv: lines.join('\n'), count: rows.length };
   }
 
-  // ------------------------------------------------------------------ turnaround simulation (mirrors analysis/process_sim.py)
   function mulberry32(a) {
     return function () {
       a |= 0; a = (a + 0x6d2b79f5) | 0;
@@ -903,7 +885,6 @@
     return counts.map((c) => Math.round((c / arr.length) * 10000) / 10000);
   }
 
-  // ------------------------------------------------------------------ inbox classifier (reproduces scikit-learn TF-IDF + logistic regression)
   let MODEL = null;
   function loadModel(model) {
     MODEL = { ...model, index: new Map(model.terms.map((t, i) => [t, i])), stop: new Set(model.stop_words || []) };
@@ -963,7 +944,6 @@
     return out;
   }
 
-  // ------------------------------------------------------------------ starting data (the requests every browser begins with)
   function seedState(HUB) {
     init(HUB.textnorm);
     const config = defaultConfig();
@@ -1025,14 +1005,8 @@
     return state;
   }
 
-  // ------------------------------------------------------------------ market scenarios
-  // Price-driven demand model layered on the combined forecast. All inputs are percentages.
-  //   fx[c]      local currency weakens against SGD by this much (negative = strengthens)
-  //   tariff[p]  import duty on product line p rises by this many points, in tariffCountries
-  //   demand[c]  demand in country c shifts by this much for reasons other than price
-  // Customers pay more when Lives Group passes a share of the move into prices (fxPass, tariffPass);
-  // the share it absorbs comes off Lives Group's SGD price instead. Orders respond through the product's
-  // price elasticity times the buyer segment's sensitivity.
+  // Market scenarios. Inputs are percentages: fx[country] (currency weakens vs SGD), tariff[product]
+  // (duty rise in tariffCountries), demand[country]. Orders respond through price elasticity.
   function marketScenario(M, inputs) {
     const A = M.assumptions;
     const fxPass = inputs.fxPass !== undefined ? inputs.fxPass : A.fx_pass;
